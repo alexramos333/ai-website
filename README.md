@@ -1,36 +1,114 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ai-website
 
-## Getting Started
+AI-focused business website with glassmorphic design, 3D animated effects, and a full content management backend.
 
-First, run the development server:
+## Tech Stack
+
+- **Framework:** Next.js 16 (App Router) with React 19
+- **Styling:** Tailwind CSS 4
+- **Database & Auth:** Supabase (PostgreSQL + Row Level Security + Auth)
+- **Animation:** Framer Motion (lazy-loaded)
+- **Validation:** Zod
+- **Language:** TypeScript (strict mode)
+- **Deployment:** Vercel
+
+## Setup
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/muchohombre/ai-website.git
+cd ai-website
+npm install
+```
+
+### 2. Configure environment variables
+
+```bash
+cp .env.local.example .env.local
+```
+
+Fill in the values in `.env.local`:
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase publishable anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (server-only) |
+| `AI_WEBHOOK_SECRET` | Bearer token for the AI article webhook |
+| `NEXT_PUBLIC_SITE_URL` | Your production domain (e.g. `https://yourdomain.com`) |
+
+### 3. Run locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploying to Vercel
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Push this repo to GitHub
+2. Import the repo in [Vercel Dashboard](https://vercel.com/new)
+3. Vercel auto-detects Next.js — no build settings changes needed
+4. Add all environment variables from `.env.local.example` in **Settings > Environment Variables**
+5. Deploy
 
-## Learn More
+## Available Scripts
 
-To learn more about Next.js, take a look at the following resources:
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Dev server with Turbopack (localhost:3000) |
+| `npm run build` | Production build |
+| `npm run start` | Serve production build |
+| `npm run lint` | ESLint (core-web-vitals + TypeScript) |
+| `npm run type-check` | TypeScript strict check (`tsc --noEmit`) |
+| `npm run analyze` | Bundle analysis (interactive report) |
+| `npm run db:types` | Generate Supabase TypeScript types |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## API Endpoints
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `GET` | `/api/articles` | List published articles | Public |
+| `POST` | `/api/articles` | Create a new article | Admin (service role) |
+| `POST` | `/api/articles/publish` | Publish or unpublish an article | Admin (service role) |
+| `POST` | `/api/contact` | Submit contact form | Public (rate-limited) |
+| `POST` | `/api/webhooks/ai-article` | AI-generated article webhook | Bearer token |
+| `GET` | `/api/health` | Health check | Public |
 
-## Deploy on Vercel
+### Example: AI Article Webhook
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+curl -X POST https://yourdomain.com/api/webhooks/ai-article \
+  -H "Authorization: Bearer YOUR_AI_WEBHOOK_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "How AI Is Transforming Business",
+    "slug": "how-ai-is-transforming-business",
+    "excerpt": "A look at the latest AI trends.",
+    "content": "Full markdown article content here...",
+    "category": "AI Trends"
+  }'
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── (public)/        # Home, blog, portfolio pages
+│   ├── (auth)/          # Login, signup, callback
+│   ├── (protected)/     # Dashboard, profile
+│   └── api/             # API routes
+├── components/
+│   ├── ui/              # GlassCard, CTAButton, SectionHeading
+│   ├── layout/          # Header, Footer
+│   └── effects/         # VideoBackground, TunnelParticles, SceneWrapper
+├── contexts/            # TransitionContext
+├── lib/
+│   ├── supabase/        # Client, server, admin Supabase wrappers
+│   └── utils/           # API helpers, SEO, validation, sanitization
+├── styles/              # Global CSS
+└── middleware.ts        # Auth middleware (JWT refresh + route protection)
+```
