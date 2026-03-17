@@ -1,174 +1,318 @@
-// Manual TypeScript types matching the Supabase schema.
-// Replace this file by running: npm run db:types
-// after the schema has been applied to the Supabase project.
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
-export interface Database {
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.4"
+  }
   public: {
     Tables: {
-      profiles: {
-        Row: {
-          id: string;
-          full_name: string;
-          avatar_url: string;
-          website: string;
-          bio: string;
-          role: "user" | "admin";
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id: string;
-          full_name?: string;
-          avatar_url?: string;
-          website?: string;
-          bio?: string;
-          role?: "user" | "admin";
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          full_name?: string;
-          avatar_url?: string;
-          website?: string;
-          bio?: string;
-          role?: "user" | "admin";
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
       articles: {
         Row: {
-          id: string;
-          title: string;
-          slug: string;
-          content: string;
-          excerpt: string;
-          meta_title: string;
-          meta_description: string;
-          og_image: string;
-          published: boolean;
-          published_at: string | null;
-          author_id: string;
-          tags: string[];
-          view_count: number;
-          created_at: string;
-          updated_at: string;
-        };
+          author_id: string
+          content: string
+          created_at: string
+          excerpt: string
+          id: string
+          meta_description: string
+          meta_title: string
+          og_image: string
+          published: boolean
+          published_at: string | null
+          slug: string
+          tags: string[]
+          title: string
+          updated_at: string
+          view_count: number
+        }
         Insert: {
-          id?: string;
-          title: string;
-          slug: string;
-          content?: string;
-          excerpt?: string;
-          meta_title?: string;
-          meta_description?: string;
-          og_image?: string;
-          published?: boolean;
-          published_at?: string | null;
-          author_id: string;
-          tags?: string[];
-          view_count?: number;
-          created_at?: string;
-          updated_at?: string;
-        };
+          author_id: string
+          content?: string
+          created_at?: string
+          excerpt?: string
+          id?: string
+          meta_description?: string
+          meta_title?: string
+          og_image?: string
+          published?: boolean
+          published_at?: string | null
+          slug: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+          view_count?: number
+        }
         Update: {
-          id?: string;
-          title?: string;
-          slug?: string;
-          content?: string;
-          excerpt?: string;
-          meta_title?: string;
-          meta_description?: string;
-          og_image?: string;
-          published?: boolean;
-          published_at?: string | null;
-          author_id?: string;
-          tags?: string[];
-          view_count?: number;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
+          author_id?: string
+          content?: string
+          created_at?: string
+          excerpt?: string
+          id?: string
+          meta_description?: string
+          meta_title?: string
+          og_image?: string
+          published?: boolean
+          published_at?: string | null
+          slug?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "articles_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_submissions: {
         Row: {
-          id: string;
-          name: string;
-          email: string;
-          phone: string;
-          message: string;
-          source: string;
-          read: boolean;
-          created_at: string;
-        };
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          phone: string
+          read: boolean
+          source: string
+        }
         Insert: {
-          id?: string;
-          name: string;
-          email: string;
-          phone?: string;
-          message: string;
-          source?: string;
-          read?: boolean;
-          created_at?: string;
-        };
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          phone?: string
+          read?: boolean
+          source?: string
+        }
         Update: {
-          id?: string;
-          name?: string;
-          email?: string;
-          phone?: string;
-          message?: string;
-          source?: string;
-          read?: boolean;
-          created_at?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          phone?: string
+          read?: boolean
+          source?: string
+        }
+        Relationships: []
+      }
       portfolio_items: {
         Row: {
-          id: string;
-          title: string;
-          description: string;
-          video_url: string;
-          thumbnail_url: string;
-          category: string;
-          sort_order: number;
-          published: boolean;
-          created_at: string;
-        };
+          category: string
+          created_at: string
+          description: string
+          id: string
+          published: boolean
+          sort_order: number
+          thumbnail_url: string
+          title: string
+          video_url: string
+        }
         Insert: {
-          id?: string;
-          title: string;
-          description?: string;
-          video_url?: string;
-          thumbnail_url?: string;
-          category?: string;
-          sort_order?: number;
-          published?: boolean;
-          created_at?: string;
-        };
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          published?: boolean
+          sort_order?: number
+          thumbnail_url?: string
+          title: string
+          video_url?: string
+        }
         Update: {
-          id?: string;
-          title?: string;
-          description?: string;
-          video_url?: string;
-          thumbnail_url?: string;
-          category?: string;
-          sort_order?: number;
-          published?: boolean;
-          created_at?: string;
-        };
-        Relationships: [];
-      };
-    };
-    Views: Record<string, never>;
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          published?: boolean
+          sort_order?: number
+          thumbnail_url?: string
+          title?: string
+          video_url?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string
+          bio: string
+          created_at: string
+          full_name: string
+          id: string
+          role: string
+          updated_at: string
+          website: string
+        }
+        Insert: {
+          avatar_url?: string
+          bio?: string
+          created_at?: string
+          full_name?: string
+          id: string
+          role?: string
+          updated_at?: string
+          website?: string
+        }
+        Update: {
+          avatar_url?: string
+          bio?: string
+          created_at?: string
+          full_name?: string
+          id?: string
+          role?: string
+          updated_at?: string
+          website?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
     Functions: {
-      is_admin: {
-        Args: Record<string, never>;
-        Returns: boolean;
-      };
-    };
-    Enums: Record<string, never>;
-  };
+      is_admin: { Args: never; Returns: boolean }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
 }
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {},
+  },
+} as const
