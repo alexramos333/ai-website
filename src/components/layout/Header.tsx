@@ -26,8 +26,15 @@ export default function Header({ user = null }: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        setIsScrolled(window.scrollY > 20);
+        ticking = false;
+      });
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -38,7 +45,7 @@ export default function Header({ user = null }: HeaderProps) {
     <header
       className={`fixed top-0 right-0 left-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "border-b border-white/10 bg-[#001138]/80 backdrop-blur-xl"
+          ? "border-b border-white/10 bg-[#001138]/95"
           : "bg-transparent"
       }`}
     >
@@ -115,7 +122,7 @@ export default function Header({ user = null }: HeaderProps) {
           isMenuOpen ? "max-h-96" : "max-h-0"
         }`}
       >
-        <div className="border-t border-white/10 bg-[#001138]/95 px-6 py-4 backdrop-blur-xl">
+        <div className="border-t border-white/10 bg-[#001138]/95 px-6 py-4">
           {navLinks.map((link) => (
             <Link
               key={link.href}

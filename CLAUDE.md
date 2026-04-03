@@ -50,7 +50,7 @@ src/
 ├── components/
 │   ├── ui/                 # GlassCard, CTAButton, SectionHeading (to be built)
 │   ├── layout/             # Header, Footer (to be built)
-│   └── effects/            # VideoBackground, SceneWrapper
+│   └── effects/            # SceneWrapper
 ├── contexts/               # TransitionContext (to be built)
 ├── lib/
 │   ├── supabase/           # ✅ client.ts, server.ts, admin.ts
@@ -69,10 +69,6 @@ src/
 - **Animation:** Framer Motion — installed, not yet used in components
 - **Validation:** Zod — installed, not yet used in API routes
 - **Bundle analysis:** `@next/bundle-analyzer` — run with `npm run analyze`
-
-### Planned tech (not yet configured)
-
-- **Video:** HTML5 `<video>` with lazy loading, CSS gradient fallback on mobile
 
 ## Coding Rules — MUST FOLLOW
 
@@ -97,7 +93,7 @@ src/
 | Token | Value |
 |---|---|
 | Page background | `#001138` |
-| Glass card | `bg: transparent`, `bg-image: linear-gradient(300deg, #004BE0, transparent)`, `backdrop-filter: blur(16px)`, `border: 1px solid rgba(255,255,255,0.15)`, `border-radius: 16px` |
+| Glass card | `bg: transparent`, `bg-image: linear-gradient(300deg, #004BE0, transparent)`, `border: 1px solid rgba(255,255,255,0.15)`, `border-radius: 16px` |
 | CTA outer | gradient `#FF9B60 → #f2295b`, `box-shadow: 5px 5px 0 0 #aa1b3f`, `drop-shadow(6px 6px 6px #000)`, `border-radius: 10px`, `animation: cta-hover 1s ease-in-out infinite alternate` |
 | CTA inner | `linear-gradient(135deg, #cb5610, #232d37)`, `background-size: 400%`, `animation: ColorChange 2s ease infinite`, `border-radius: 5px`, `font-weight: 900` |
 | Headline font | Montserrat 900 |
@@ -108,9 +104,6 @@ src/
 ## Performance Rules
 
 - Every page MUST stay under 500KB total transfer size.
-- Background video: WebM first, MP4 fallback. Max 5MB per clip.
-- On mobile (< 768px): skip video, show animated CSS gradient instead.
-- Lazy load VideoBackground via `dynamic()` imports.
 - ISR only on public content pages (blog listing, articles).
 
 ## Security Rules
