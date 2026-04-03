@@ -50,7 +50,7 @@ src/
 ├── components/
 │   ├── ui/                 # GlassCard, CTAButton, SectionHeading (to be built)
 │   ├── layout/             # Header, Footer (to be built)
-│   └── effects/            # VideoBackground, TunnelParticles, SceneWrapper (to be built)
+│   └── effects/            # VideoBackground, SceneWrapper
 ├── contexts/               # TransitionContext (to be built)
 ├── lib/
 │   ├── supabase/           # ✅ client.ts, server.ts, admin.ts
@@ -110,7 +110,7 @@ src/
 - Every page MUST stay under 500KB total transfer size.
 - Background video: WebM first, MP4 fallback. Max 5MB per clip.
 - On mobile (< 768px): skip video, show animated CSS gradient instead.
-- Lazy load TunnelParticles and VideoBackground via `dynamic()` imports.
+- Lazy load VideoBackground via `dynamic()` imports.
 - ISR only on public content pages (blog listing, articles).
 
 ## Security Rules

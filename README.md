@@ -104,7 +104,7 @@ src/
 ├── components/
 │   ├── ui/              # GlassCard, CTAButton, SectionHeading
 │   ├── layout/          # Header, Footer
-│   └── effects/         # VideoBackground, TunnelParticles, SceneWrapper
+│   └── effects/         # VideoBackground, SceneWrapper
 ├── contexts/            # TransitionContext
 ├── lib/
 │   ├── supabase/        # Client, server, admin Supabase wrappers
