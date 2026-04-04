@@ -31,14 +31,20 @@ body {
   border-radius: 16px;
 }
 
+.glass-card-contained {
+  contain: layout paint;
+}
+
 /* ─── CTA Button ─── */
 .cta-btn {
   display: grid;
   background: linear-gradient(135deg, #5de6fc, #67c3ff, #305ae7, #6000ff) !important;
   padding: 0.6rem 0.6rem;
   border-radius: 10px;
-  box-shadow: 5px 5px 0 0 #6000ff !important;
-  filter: drop-shadow(6px 6px 6px #000);
+  box-shadow:
+    5px 5px 0 0 #6000ff,
+    6px 6px 6px rgba(0, 0, 0, 0.7) !important;
+  will-change: transform;
   animation: cta-hover 1s ease-in-out infinite alternate;
 }
 
@@ -79,17 +85,12 @@ body {
 /* ─── Text Effects ─── */
 .text-3d {
   text-shadow:
-    1px 1px 0 rgba(0, 0, 0, 0.4),
-    2px 2px 0 rgba(0, 0, 0, 0.3),
-    3px 3px 0 rgba(0, 0, 0, 0.2),
+    2px 2px 0 rgba(0, 0, 0, 0.4),
     4px 4px 8px rgba(0, 0, 0, 0.5);
 }
 
 .text-glow {
-  text-shadow:
-    0 0 10px rgba(0, 75, 224, 0.5),
-    0 0 20px rgba(0, 75, 224, 0.3),
-    0 0 40px rgba(0, 75, 224, 0.15);
+  text-shadow: 0 0 20px rgba(0, 75, 224, 0.4);
 }
 
 /* ─── Section Padding ─── */
