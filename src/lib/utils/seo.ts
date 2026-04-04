@@ -4,8 +4,9 @@ export { slugify as generateSlug } from "@/lib/utils/api";
 
 type ArticleRow = Database["public"]["Tables"]["articles"]["Row"];
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://yourdomain.com";
+const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://yourdomain.com"
+).replace(/\/+$/, "");
 
 export function calculateReadTime(content: string): string {
   const text = content.replace(/<[^>]*>/g, "");

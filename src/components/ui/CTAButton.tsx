@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useEffect } from "react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -46,6 +47,31 @@ const sizeMap = {
   lg: "px-6 py-3 text-lg",
 } as const;
 
+function useInViewClass() {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          el.classList.add("cta-in-view");
+        } else {
+          el.classList.remove("cta-in-view");
+        }
+      },
+      { threshold: 0 },
+    );
+
+    observer.observe(el);
+    return () => { observer.disconnect(); };
+  }, []);
+
+  return wrapperRef;
+}
+
 export default function CTAButton({
   children,
   variant = "primary",
@@ -58,6 +84,7 @@ export default function CTAButton({
   disabled,
   "aria-label": ariaLabel,
 }: CTAButtonProps) {
+  const wrapperRef = useInViewClass();
   const variantClass = variant === "secondary" ? "opacity-80" : "";
   const inner = (
     <span className={`cta-btn-inside block ${sizeMap[size]} ${variantClass}`}>
@@ -67,46 +94,52 @@ export default function CTAButton({
 
   if (href) {
     return (
-      <Link
-        href={href}
-        className={`cta-btn inline-block ${className}`}
-        aria-label={ariaLabel}
-      >
-        {inner}
-      </Link>
+      <div ref={wrapperRef} className="inline-block">
+        <Link
+          href={href}
+          className={`cta-btn inline-block ${className}`}
+          aria-label={ariaLabel}
+        >
+          {inner}
+        </Link>
+      </div>
     );
   }
 
   if (type === "submit") {
     const isDisabled = disabled || loading;
     return (
-      <button
-        type="submit"
-        className={`cta-btn relative ${isDisabled ? "pointer-events-none opacity-50" : ""} ${className}`}
-        disabled={isDisabled}
-        aria-label={ariaLabel}
-        aria-busy={loading}
-      >
-        <span className={`cta-btn-inside block ${sizeMap[size]} ${variantClass} ${loading ? "opacity-0" : ""}`}>
-          {children}
-        </span>
-        {loading && (
-          <span className="absolute inset-0 flex items-center justify-center">
-            <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+      <div ref={wrapperRef} className="inline-block">
+        <button
+          type="submit"
+          className={`cta-btn relative ${isDisabled ? "pointer-events-none opacity-50" : ""} ${className}`}
+          disabled={isDisabled}
+          aria-label={ariaLabel}
+          aria-busy={loading}
+        >
+          <span className={`cta-btn-inside block ${sizeMap[size]} ${variantClass} ${loading ? "opacity-0" : ""}`}>
+            {children}
           </span>
-        )}
-      </button>
+          {loading && (
+            <span className="absolute inset-0 flex items-center justify-center">
+              <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+            </span>
+          )}
+        </button>
+      </div>
     );
   }
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`cta-btn ${className}`}
-      aria-label={ariaLabel}
-    >
-      {inner}
-    </button>
+    <div ref={wrapperRef} className="inline-block">
+      <button
+        type="button"
+        onClick={onClick}
+        className={`cta-btn ${className}`}
+        aria-label={ariaLabel}
+      >
+        {inner}
+      </button>
+    </div>
   );
 }

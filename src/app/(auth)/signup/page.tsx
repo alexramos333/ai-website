@@ -1,12 +1,9 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import { useState } from "react";
 import Link from "next/link";
 import GlassCard from "@/components/ui/GlassCard";
 import CTAButton from "@/components/ui/CTAButton";
-import { createClient } from "@/lib/supabase/client";
 import { signUpSchema } from "@/lib/utils/validation";
 import type { SignUpFormData } from "@/lib/utils/validation";
 
@@ -50,6 +47,7 @@ export default function SignUpPage() {
 
     setLoading(true);
 
+    const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
     const { error } = await supabase.auth.signUp({
       email: result.data.email,

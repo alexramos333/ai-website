@@ -1,22 +1,14 @@
-import { createClient } from "@/lib/supabase/server";
+import { getUser, getProfile } from "@/lib/supabase/queries";
 import Header from "@/components/layout/Header";
 
 export default async function AuthHeader() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) {
     return <Header />;
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name")
-    .eq("id", user.id)
-    .single();
+  const profile = await getProfile(user.id);
 
   const fullName =
     profile?.full_name ||

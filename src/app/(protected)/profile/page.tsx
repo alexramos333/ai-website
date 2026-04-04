@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getUser, getProfile } from "@/lib/supabase/queries";
 import ProfileForm from "@/components/forms/ProfileForm";
 
 export const dynamic = "force-dynamic";
@@ -9,21 +9,13 @@ export const metadata = {
 };
 
 export default async function ProfilePage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) {
     redirect("/login");
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name, website, bio")
-    .eq("id", user.id)
-    .single();
+  const profile = await getProfile(user.id);
 
   return (
     <div className="section-padding">

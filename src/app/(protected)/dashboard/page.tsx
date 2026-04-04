@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getUser, getProfile } from "@/lib/supabase/queries";
 import GlassCard from "@/components/ui/GlassCard";
-import CTAButton from "@/components/ui/CTAButton";
+import CTALink from "@/components/ui/CTALink";
 
 export const dynamic = "force-dynamic";
 
@@ -10,21 +10,13 @@ export const metadata = {
 };
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) {
     redirect("/login");
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name, role, created_at")
-    .eq("id", user.id)
-    .single();
+  const profile = await getProfile(user.id);
 
   const displayName =
     profile?.full_name ||
@@ -58,9 +50,9 @@ export default async function DashboardPage() {
           <p className="mb-6 text-sm text-white/75">
             Update your personal information and bio.
           </p>
-          <CTAButton href="/profile" size="sm" aria-label="Edit your profile">
+          <CTALink href="/profile" size="sm" aria-label="Edit your profile">
             Edit Profile
-          </CTAButton>
+          </CTALink>
         </GlassCard>
 
         <GlassCard padding="lg">
@@ -68,9 +60,9 @@ export default async function DashboardPage() {
           <p className="mb-6 text-sm text-white/75">
             Manage your published and draft articles.
           </p>
-          <CTAButton href="/dashboard" size="sm" variant="secondary" aria-label="View articles (coming soon)">
+          <CTALink href="/dashboard" size="sm" variant="secondary" aria-label="View articles (coming soon)">
             Coming Soon
-          </CTAButton>
+          </CTALink>
         </GlassCard>
 
         <GlassCard padding="lg">
@@ -78,9 +70,9 @@ export default async function DashboardPage() {
           <p className="mb-6 text-sm text-white/75">
             View messages from the contact form.
           </p>
-          <CTAButton href="/dashboard" size="sm" variant="secondary" aria-label="View contacts (coming soon)">
+          <CTALink href="/dashboard" size="sm" variant="secondary" aria-label="View contacts (coming soon)">
             Coming Soon
-          </CTAButton>
+          </CTALink>
         </GlassCard>
       </div>
     </div>

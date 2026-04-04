@@ -44,13 +44,14 @@ body {
   box-shadow:
     5px 5px 0 0 #6000ff,
     6px 6px 6px rgba(0, 0, 0, 0.7) !important;
-  will-change: transform;
   animation: cta-hover 1s ease-in-out infinite alternate;
+  animation-play-state: paused;
 }
 
 .cta-btn-inside {
   background: radial-gradient(#5de6fc,#67c3ff,#305ae7,#6000ff,#232d37,#232d37,#232d37,#232d37,#232d37,#232d37) 0% 0% / 400% 400%;
   animation: ColorChange 2s ease infinite;
+  animation-play-state: paused;
   padding: 10px;
   border-radius: 5px;
   font-weight: 900;
@@ -58,6 +59,18 @@ body {
   text-shadow: 0 0 5px #232d37;
   color: #fff;
   text-align: center;
+}
+
+/* Animations play when CTA is in viewport */
+.cta-in-view .cta-btn,
+.cta-in-view.cta-btn {
+  animation-play-state: running;
+}
+
+.cta-in-view .cta-btn .cta-btn-inside,
+.cta-in-view.cta-btn .cta-btn-inside,
+.cta-in-view > .cta-btn-inside {
+  animation-play-state: running;
 }
 
 /* ─── Keyframes ─── */

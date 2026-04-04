@@ -9,12 +9,12 @@ interface ArticleCardProps {
     excerpt: string;
     published_at: string | null;
     tags: string[];
-    content: string;
+    content?: string;
   };
 }
 
 export default function ArticleCard({ article }: ArticleCardProps) {
-  const readTime = calculateReadTime(article.content);
+  const readTime = article.content ? calculateReadTime(article.content) : null;
   const formattedDate = article.published_at
     ? new Date(article.published_at).toLocaleDateString("en-US", {
         year: "numeric",
@@ -34,8 +34,8 @@ export default function ArticleCard({ article }: ArticleCardProps) {
         <p className="mt-2 line-clamp-2 text-white/75">{article.excerpt}</p>
         <div className="mt-4 flex items-center gap-3 text-sm text-white/50">
           {formattedDate && <span>{formattedDate}</span>}
-          {formattedDate && <span aria-hidden="true">&middot;</span>}
-          <span>{readTime}</span>
+          {formattedDate && readTime && <span aria-hidden="true">&middot;</span>}
+          {readTime && <span>{readTime}</span>}
         </div>
         {displayTags.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">

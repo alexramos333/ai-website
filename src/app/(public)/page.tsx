@@ -3,7 +3,8 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import SceneWrapper from "@/components/effects/SceneWrapper";
 import GlassCard from "@/components/ui/GlassCard";
-import CTAButton from "@/components/ui/CTAButton";
+import AnimatedGlassCard from "@/components/ui/AnimatedGlassCard";
+import CTALink from "@/components/ui/CTALink";
 import SectionHeading from "@/components/ui/SectionHeading";
 
 export const metadata: Metadata = {
@@ -69,18 +70,18 @@ interface TeamMember {
 }
 
 const teamMembers: TeamMember[] = [
-  { emoji: "👨‍💻", role: "AI Engineer" },
-  { emoji: "🎨", role: "UI/UX Designer" },
-  { emoji: "📊", role: "Data Scientist" },
-  { emoji: "🔧", role: "Backend Dev" },
-  { emoji: "📱", role: "Mobile Dev" },
-  { emoji: "🛡️", role: "Security Expert" },
-  { emoji: "☁️", role: "Cloud Architect" },
-  { emoji: "🤖", role: "ML Engineer" },
-  { emoji: "📈", role: "Growth Hacker" },
-  { emoji: "✍️", role: "Content Writer" },
-  { emoji: "🎯", role: "SEO Specialist" },
-  { emoji: "💡", role: "Product Manager" },
+  { emoji: "\u{1F468}\u200D\u{1F4BB}", role: "AI Engineer" },
+  { emoji: "\u{1F3A8}", role: "UI/UX Designer" },
+  { emoji: "\u{1F4CA}", role: "Data Scientist" },
+  { emoji: "\u{1F527}", role: "Backend Dev" },
+  { emoji: "\u{1F4F1}", role: "Mobile Dev" },
+  { emoji: "\u{1F6E1}\uFE0F", role: "Security Expert" },
+  { emoji: "\u2601\uFE0F", role: "Cloud Architect" },
+  { emoji: "\u{1F916}", role: "ML Engineer" },
+  { emoji: "\u{1F4C8}", role: "Growth Hacker" },
+  { emoji: "\u270D\uFE0F", role: "Content Writer" },
+  { emoji: "\u{1F3AF}", role: "SEO Specialist" },
+  { emoji: "\u{1F4A1}", role: "Product Manager" },
 ];
 
 interface SkillCategory {
@@ -161,17 +162,17 @@ export default function HomePage() {
                 and proven strategies.
               </p>
               <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <CTAButton href="/contact" className="w-full sm:w-auto" aria-label="Book a free strategy call">
+                <CTALink href="/contact" className="w-full sm:w-auto" aria-label="Book a free strategy call">
                   Book Free Strategy Call
-                </CTAButton>
-                <CTAButton
+                </CTALink>
+                <CTALink
                   href="/portfolio"
                   variant="secondary"
                   className="w-full sm:w-auto"
                   aria-label="View portfolio"
                 >
                   View Portfolio
-                </CTAButton>
+                </CTALink>
               </div>
             </GlassCard>
 
@@ -203,11 +204,11 @@ export default function HomePage() {
             </SectionHeading>
             <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {caseStudies.map((study) => (
-                <GlassCard key={study.stat} animated>
+                <AnimatedGlassCard key={study.stat}>
                   <p className="text-sm text-[#3399FF]">Case Study</p>
                   <p className="mt-2 text-xl font-black">{study.stat}</p>
                   <p className="mt-1 text-white/75">{study.detail}</p>
-                </GlassCard>
+                </AnimatedGlassCard>
               ))}
             </div>
           </div>
@@ -221,7 +222,7 @@ export default function HomePage() {
             </SectionHeading>
             <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {portfolioItems.map((item, i) => (
-                <GlassCard key={i} animated>
+                <AnimatedGlassCard key={i}>
                   <p className="text-lg font-black">{item.title}</p>
                   <p className="mt-1 text-sm text-white/75">
                     {item.description}
@@ -243,7 +244,7 @@ export default function HomePage() {
                   <p className="mt-3 text-sm text-[#3399FF]">
                     View Full Screen &rarr;
                   </p>
-                </GlassCard>
+                </AnimatedGlassCard>
               ))}
             </div>
           </div>
@@ -257,15 +258,14 @@ export default function HomePage() {
             </SectionHeading>
             <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {teamMembers.map((member) => (
-                <GlassCard
+                <AnimatedGlassCard
                   key={member.role}
                   padding="sm"
-                  animated
                   className="text-center"
                 >
                   <p className="text-4xl">{member.emoji}</p>
                   <p className="mt-2 text-sm font-black">{member.role}</p>
-                </GlassCard>
+                </AnimatedGlassCard>
               ))}
             </div>
           </div>
@@ -279,7 +279,7 @@ export default function HomePage() {
             </SectionHeading>
             <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {skillCategories.map((category) => (
-                <GlassCard key={category.title} animated>
+                <AnimatedGlassCard key={category.title}>
                   <h3 className="text-xl font-black">{category.title}</h3>
                   <ul className="mt-4 space-y-2">
                     {category.skills.map((skill) => (
@@ -288,7 +288,7 @@ export default function HomePage() {
                       </li>
                     ))}
                   </ul>
-                </GlassCard>
+                </AnimatedGlassCard>
               ))}
             </div>
           </div>
@@ -302,43 +302,43 @@ export default function HomePage() {
             </SectionHeading>
             <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               <GlassCard className="text-center">
-                <p className="text-4xl">📞</p>
+                <p className="text-4xl">{"\u{1F4DE}"}</p>
                 <p className="mt-2 font-black">Phone</p>
                 <p className="mt-1 text-white/75">910-619-9205</p>
                 <div className="mt-4">
-                  <CTAButton href="tel:9106199205" size="sm" aria-label="Call now">
+                  <CTALink href="tel:9106199205" size="sm" aria-label="Call now">
                     Call Now
-                  </CTAButton>
+                  </CTALink>
                 </div>
               </GlassCard>
 
               <GlassCard className="text-center">
-                <p className="text-4xl">✉️</p>
+                <p className="text-4xl">{"\u2709\uFE0F"}</p>
                 <p className="mt-2 font-black">Email</p>
                 <p className="mt-1 text-white/75">Get In Touch</p>
                 <div className="mt-4">
-                  <CTAButton
+                  <CTALink
                     href="/contact"
                     size="sm"
                     aria-label="Send email"
                   >
                     Send Email
-                  </CTAButton>
+                  </CTALink>
                 </div>
               </GlassCard>
 
               <GlassCard className="text-center">
-                <p className="text-4xl">💼</p>
+                <p className="text-4xl">{"\u{1F4BC}"}</p>
                 <p className="mt-2 font-black">LinkedIn</p>
                 <p className="mt-1 text-white/75">Connect With Me</p>
                 <div className="mt-4">
-                  <CTAButton
+                  <CTALink
                     href="#"
                     size="sm"
                     aria-label="View LinkedIn profile"
                   >
                     Connect
-                  </CTAButton>
+                  </CTALink>
                 </div>
               </GlassCard>
             </div>

@@ -15,5 +15,7 @@ export async function GET() {
     return createErrorResponse("Failed to fetch portfolio items.", 500);
   }
 
-  return createSuccessResponse(data);
+  return createSuccessResponse(data, 200, {
+    "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+  });
 }

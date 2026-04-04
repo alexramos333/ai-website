@@ -36,7 +36,9 @@ export async function GET(request: NextRequest) {
     return createErrorResponse("Failed to fetch articles.", 500);
   }
 
-  return createSuccessResponse(data);
+  return createSuccessResponse(data, 200, {
+    "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+  });
 }
 
 export async function POST(request: NextRequest) {

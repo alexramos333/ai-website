@@ -10,11 +10,6 @@ export async function middleware(request: NextRequest) {
     request: { headers: request.headers },
   });
 
-  // Security headers on every response
-  response.headers.set("X-Frame-Options", "SAMEORIGIN");
-  response.headers.set("X-Content-Type-Options", "nosniff");
-  response.headers.set("X-XSS-Protection", "1; mode=block");
-  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set("x-request-id", crypto.randomUUID());
 
   const supabase = createServerClient(
@@ -35,20 +30,21 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Refresh JWT — always use getUser(), never getSession()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // Redirect unauthenticated users away from protected routes
+  // Only call getUser() on protected routes — skip auth round-trip for public pages
   const isProtected = protectedPaths.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`)
   );
 
-  if (isProtected && !user) {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("redirectedFrom", pathname);
-    return NextResponse.redirect(loginUrl);
+  if (isProtected) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("redirectedFrom", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
   return response;

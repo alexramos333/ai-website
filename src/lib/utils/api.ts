@@ -7,8 +7,12 @@ import { generateSlug } from "@/lib/utils/sanitize";
 
 // ─── Response Helpers ───
 
-export function createSuccessResponse(data: unknown, status = 200): NextResponse {
-  return NextResponse.json(data, { status });
+export function createSuccessResponse(
+  data: unknown,
+  status = 200,
+  headers?: Record<string, string>,
+): NextResponse {
+  return NextResponse.json(data, { status, headers });
 }
 
 export function createErrorResponse(message: string, status: number): NextResponse {
@@ -50,6 +54,7 @@ export async function validateAdminUser(
 }
 
 // ─── Rate Limiting ───
+// Single-instance in-memory fallback. Replace with Upstash Redis or Vercel KV for production.
 
 interface RateLimitEntry {
   count: number;
@@ -57,6 +62,16 @@ interface RateLimitEntry {
 }
 
 const rateLimitStore = new Map<string, RateLimitEntry>();
+let callsSinceCleanup = 0;
+
+function cleanupExpiredEntries(): void {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitStore) {
+    if (now >= entry.resetAt) {
+      rateLimitStore.delete(key);
+    }
+  }
+}
 
 export function getRateLimitKey(request: NextRequest): string {
   const forwarded = request.headers.get("x-forwarded-for");
@@ -69,6 +84,12 @@ export function checkRateLimit(
   limit = 10,
   windowMs = 60_000
 ): { allowed: boolean } {
+  callsSinceCleanup += 1;
+  if (callsSinceCleanup >= 100) {
+    callsSinceCleanup = 0;
+    cleanupExpiredEntries();
+  }
+
   const now = Date.now();
   const entry = rateLimitStore.get(key);
 

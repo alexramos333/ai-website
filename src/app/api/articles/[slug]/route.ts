@@ -1,6 +1,5 @@
 import { type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { articleSchema } from "@/lib/utils/validation";
 import {
   createSuccessResponse,
@@ -9,6 +8,10 @@ import {
   validateAdminUser,
 } from "@/lib/utils/api";
 import { sanitizeText } from "@/lib/utils/sanitize";
+
+const CACHE_HEADERS = {
+  "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+};
 
 export async function GET(
   _request: NextRequest,
@@ -28,19 +31,7 @@ export async function GET(
     return createErrorResponse("Article not found.", 404);
   }
 
-  // Fire-and-forget view count increment via admin client (bypasses RLS)
-  const admin = createAdminClient();
-  admin
-    .from("articles")
-    .update({ view_count: article.view_count + 1 })
-    .eq("id", article.id)
-    .then(({ error: updateError }) => {
-      if (updateError) {
-        console.error("View count increment error:", updateError.message);
-      }
-    });
-
-  return createSuccessResponse(article);
+  return createSuccessResponse(article, 200, CACHE_HEADERS);
 }
 
 export async function PATCH(

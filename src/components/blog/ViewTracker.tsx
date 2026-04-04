@@ -8,7 +8,7 @@ interface ViewTrackerProps {
 
 export default function ViewTracker({ slug }: ViewTrackerProps) {
   useEffect(() => {
-    fetch(`/api/articles/${slug}`).catch(() => {
+    fetch(`/api/articles/${slug}/view`, { method: "POST" }).catch(() => {
       // Silently ignore — view tracking is best-effort
     });
   }, [slug]);

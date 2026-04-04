@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
-import { TransitionProvider } from "@/contexts/TransitionContext";
-import LazyPageTransition from "@/components/effects/LazyPageTransition";
 import "@/styles/globals.css";
 
 const montserrat = Montserrat({
@@ -33,11 +31,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={montserrat.variable}>
+      <head>
+        <link rel="preconnect" href="https://dmuoleakkfmkjjtkynig.supabase.co" />
+      </head>
       <body className="min-h-screen bg-[#001138] font-sans text-white antialiased">
-        <TransitionProvider>
-          {children}
-          <LazyPageTransition />
-        </TransitionProvider>
+        {children}
       </body>
     </html>
   );

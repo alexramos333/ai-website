@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -20,6 +21,17 @@ interface ArticlePageProps {
   params: Promise<{ slug: string }>;
 }
 
+const getArticle = cache(async (slug: string) => {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("articles")
+    .select("*")
+    .eq("slug", slug)
+    .eq("published", true)
+    .single();
+  return data;
+});
+
 export async function generateStaticParams() {
   const supabase = createAdminClient();
   const { data: articles } = await supabase
@@ -34,14 +46,7 @@ export async function generateMetadata({
   params,
 }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
-
-  const { data: article } = await supabase
-    .from("articles")
-    .select("*")
-    .eq("slug", slug)
-    .eq("published", true)
-    .single();
+  const article = await getArticle(slug);
 
   if (!article) {
     return { title: "Article Not Found" };
@@ -50,19 +55,13 @@ export async function generateMetadata({
   return generateArticleMetadata(article);
 }
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://yourdomain.com";
+const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://yourdomain.com"
+).replace(/\/+$/, "");
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
-  const supabase = await createClient();
-
-  const { data: article } = await supabase
-    .from("articles")
-    .select("*")
-    .eq("slug", slug)
-    .eq("published", true)
-    .single();
+  const article = await getArticle(slug);
 
   if (!article) {
     notFound();
@@ -85,14 +84,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     excerpt: string;
     tags: string[];
     published_at: string | null;
-    content: string;
   }
 
   let relatedArticles: RelatedArticle[] = [];
   if (article.tags.length > 0) {
+    const supabase = await createClient();
     const { data } = await supabase
       .from("articles")
-      .select("id, title, slug, excerpt, tags, published_at, content")
+      .select("id, title, slug, excerpt, tags, published_at")
       .eq("published", true)
       .overlaps("tags", article.tags)
       .neq("id", article.id)

@@ -1,6 +1,5 @@
-import Link from "next/link";
 import GlassCard from "@/components/ui/GlassCard";
-import CTAButton from "@/components/ui/CTAButton";
+import CTALink from "@/components/ui/CTALink";
 
 export default function NotFound() {
   return (
@@ -17,9 +16,9 @@ export default function NotFound() {
           The page you&apos;re looking for doesn&apos;t exist or has been moved.
         </p>
         <div className="mt-6">
-          <CTAButton href="/" aria-label="Return to home page">
+          <CTALink href="/" aria-label="Return to home page">
             Back to Home
-          </CTAButton>
+          </CTALink>
         </div>
       </GlassCard>
     </div>
