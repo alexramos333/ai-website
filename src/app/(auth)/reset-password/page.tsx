@@ -52,7 +52,8 @@ export default function ResetPasswordPage() {
     });
 
     if (error) {
-      setServerError(error.message);
+      console.error("Password reset failed:", error.message);
+      setServerError("Something went wrong. Please try again.");
       setLoading(false);
       return;
     }

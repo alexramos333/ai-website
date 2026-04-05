@@ -56,12 +56,19 @@ function LoginForm() {
     });
 
     if (error) {
-      setServerError(error.message);
+      console.error("Login failed:", error.message);
+      setServerError("Invalid email or password.");
       setLoading(false);
       return;
     }
 
-    router.push(redirectedFrom || "/dashboard");
+    const safeRedirect =
+      redirectedFrom &&
+      redirectedFrom.startsWith("/") &&
+      !redirectedFrom.startsWith("//")
+        ? redirectedFrom
+        : "/dashboard";
+    router.push(safeRedirect);
   }
 
   return (

@@ -52,7 +52,8 @@ export default function FreeCoursePage() {
     });
 
     if (error) {
-      setServerError(error.message);
+      console.error("Magic link failed:", error.message);
+      setServerError("Something went wrong. Please try again.");
       setLoading(false);
       return;
     }

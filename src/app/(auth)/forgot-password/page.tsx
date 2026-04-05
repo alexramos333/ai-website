@@ -38,7 +38,8 @@ export default function ForgotPasswordPage() {
     });
 
     if (error) {
-      setServerError(error.message);
+      console.error("Password reset request failed:", error.message);
+      setServerError("Something went wrong. Please try again.");
       setLoading(false);
       return;
     }

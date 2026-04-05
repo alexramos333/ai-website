@@ -3,7 +3,7 @@ import crypto from "crypto";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { articleSchema } from "@/lib/utils/validation";
-import { createSuccessResponse, createErrorResponse, createValidationErrorResponse, slugify } from "@/lib/utils/api";
+import { createSuccessResponse, createErrorResponse, createValidationErrorResponse, slugify, getRateLimitKey, checkRateLimit } from "@/lib/utils/api";
 import { sanitizeText } from "@/lib/utils/sanitize";
 
 const webhookArticleSchema = articleSchema.extend({
@@ -22,6 +22,12 @@ function verifyToken(token: string, secret: string): boolean {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitKey = `webhook:${getRateLimitKey(request)}`;
+  const { allowed } = checkRateLimit(rateLimitKey, 5, 60_000);
+  if (!allowed) {
+    return createErrorResponse("Too many requests.", 429);
+  }
+
   const secret = process.env.AI_WEBHOOK_SECRET;
   if (!secret) {
     console.error("AI_WEBHOOK_SECRET is not configured.");

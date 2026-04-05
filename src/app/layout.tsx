@@ -32,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={montserrat.variable}>
       <head>
-        <link rel="preconnect" href="https://dmuoleakkfmkjjtkynig.supabase.co" />
+        <link rel="preconnect" href={`https://${process.env.NEXT_PUBLIC_SUPABASE_PROJECT_ID}.supabase.co`} />
       </head>
       <body className="min-h-screen bg-[#001138] font-sans text-white antialiased">
         {children}

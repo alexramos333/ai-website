@@ -1,6 +1,30 @@
+import sanitize from "sanitize-html";
+
 /** Trim whitespace, remove null bytes, limit length */
 export function sanitizeText(input: string, maxLength = 10_000): string {
   return input.replace(/\0/g, "").trim().slice(0, maxLength);
+}
+
+/** Sanitize HTML content — strips dangerous tags/attributes while preserving
+ *  safe formatting elements for rendered article content. */
+export function sanitizeHtml(html: string): string {
+  return sanitize(html, {
+    allowedTags: [
+      "p", "br", "strong", "em", "b", "i", "u", "s",
+      "h1", "h2", "h3", "h4", "h5", "h6",
+      "ul", "ol", "li",
+      "a", "img",
+      "blockquote", "pre", "code",
+      "table", "thead", "tbody", "tr", "th", "td",
+      "hr", "div", "span",
+    ],
+    allowedAttributes: {
+      a: ["href", "title", "target", "rel"],
+      img: ["src", "alt", "title"],
+      "*": ["class"],
+    },
+    allowedSchemes: ["http", "https", "mailto"],
+  });
 }
 
 /** Normalize phone to digits only */

@@ -54,7 +54,11 @@ export async function validateAdminUser(
 }
 
 // ─── Rate Limiting ───
-// Single-instance in-memory fallback. Replace with Upstash Redis or Vercel KV for production.
+// WARNING: In-memory store. Works for single-instance deployments only.
+// On Vercel serverless, each invocation has its own memory — this rate
+// limiter will NOT work across instances. For production, replace with:
+//   - Upstash Redis (@upstash/ratelimit): https://upstash.com/docs/redis/sdks/ratelimit-ts/overview
+//   - Vercel KV: https://vercel.com/docs/storage/vercel-kv
 
 interface RateLimitEntry {
   count: number;

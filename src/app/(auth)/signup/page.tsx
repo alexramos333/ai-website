@@ -61,7 +61,8 @@ export default function SignUpPage() {
     });
 
     if (error) {
-      setServerError(error.message);
+      console.error("Signup failed:", error.message);
+      setServerError("Something went wrong. Please try again.");
       setLoading(false);
       return;
     }

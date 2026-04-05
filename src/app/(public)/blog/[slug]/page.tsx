@@ -9,6 +9,7 @@ import {
   generateArticleJsonLd,
   calculateReadTime,
 } from "@/lib/utils/seo";
+import { sanitizeHtml } from "@/lib/utils/sanitize";
 import SectionHeading from "@/components/ui/SectionHeading";
 import ArticleCard from "@/components/ui/ArticleCard";
 import ViewTracker from "@/components/blog/ViewTracker";
@@ -158,7 +159,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
           <div
             className="prose-invert mt-10"
-            dangerouslySetInnerHTML={{ __html: article.content }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
           />
 
           {/* Share */}

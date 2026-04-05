@@ -82,8 +82,9 @@ export default function ProfileForm({ initialData }: ProfileFormProps) {
       .eq("id", user.id);
 
     if (error) {
+      console.error("Profile update failed:", error.message);
       setStatus("error");
-      setStatusMessage(error.message);
+      setStatusMessage("Failed to update profile. Please try again.");
     } else {
       setStatus("success");
       setStatusMessage("Profile updated successfully.");
@@ -118,8 +119,9 @@ export default function ProfileForm({ initialData }: ProfileFormProps) {
     });
 
     if (error) {
+      console.error("Password update failed:", error.message);
       setPasswordStatus("error");
-      setPasswordStatusMessage(error.message);
+      setPasswordStatusMessage("Failed to update password. Please try again.");
     } else {
       setPasswordStatus("success");
       setPasswordStatusMessage("Password updated successfully.");

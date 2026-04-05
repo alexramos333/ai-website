@@ -1,12 +1,23 @@
 import { type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createSuccessResponse, createErrorResponse } from "@/lib/utils/api";
+import { createSuccessResponse, createErrorResponse, getRateLimitKey, checkRateLimit } from "@/lib/utils/api";
 
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  const rateLimitKey = `view:${getRateLimitKey(request)}`;
+  const { allowed } = checkRateLimit(rateLimitKey, 10, 60_000);
+  if (!allowed) {
+    return createErrorResponse("Too many requests.", 429);
+  }
+
   const { slug } = await params;
+
+  if (!slug || slug.length > 200 || !/^[a-z0-9-]+$/.test(slug)) {
+    return createErrorResponse("Invalid slug.", 400);
+  }
+
   const admin = createAdminClient();
 
   const { data: article, error: fetchError } = await admin
