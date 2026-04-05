@@ -1,7 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const protectedPaths = ["/dashboard", "/profile", "/api/protected"];
+const protectedPaths = ["/dashboard", "/profile", "/api/protected", "/course"];
+const authPaths = ["/login", "/signup"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -44,6 +45,19 @@ export async function middleware(request: NextRequest) {
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirectedFrom", pathname);
       return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  // Redirect authenticated users away from login/signup pages
+  const isAuthPage = authPaths.includes(pathname);
+
+  if (isAuthPage) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   }
 

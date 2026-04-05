@@ -59,3 +59,33 @@ export const articleSchema = z.object({
 });
 
 export type ArticleFormData = z.infer<typeof articleSchema>;
+
+// ─── Magic Link ───
+export const magicLinkSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+});
+
+export type MagicLinkFormData = z.infer<typeof magicLinkSchema>;
+
+// ─── Forgot Password ───
+export const forgotPasswordSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+});
+
+export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+
+// ─── Reset / Change Password ───
+export const resetPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/\d/, "Password must contain at least one number"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
