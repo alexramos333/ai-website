@@ -1,31 +1,28 @@
 "use client";
 
-import { useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import Link from "next/link";
 import GlassCard from "@/components/ui/GlassCard";
 import CTAButton from "@/components/ui/CTAButton";
-import { loginSchema } from "@/lib/utils/validation";
-import type { LoginFormData } from "@/lib/utils/validation";
+import { resetPasswordSchema } from "@/lib/utils/validation";
+import type { ResetPasswordFormData } from "@/lib/utils/validation";
 
 const inputClasses =
   "w-full rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white placeholder:text-white/40 focus:border-[#004be0] focus:outline-none focus:ring-1 focus:ring-[#004be0]";
 const errorInputClasses =
   "w-full rounded-lg border border-red-400/50 bg-white/5 px-4 py-3 text-white placeholder:text-white/40 focus:border-red-400 focus:outline-none focus:ring-1 focus:ring-red-400";
 
-function LoginForm() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectedFrom = searchParams.get("redirectedFrom");
-  const callbackError = searchParams.get("error");
+type FieldErrors = Partial<Record<keyof ResetPasswordFormData, string>>;
 
-  const [formData, setFormData] = useState<LoginFormData>({
-    email: "",
+export default function ResetPasswordPage() {
+  const [formData, setFormData] = useState({
     password: "",
+    confirmPassword: "",
   });
-  const [errors, setErrors] = useState<Partial<Record<keyof LoginFormData, string>>>({});
-  const [serverError, setServerError] = useState(callbackError === "auth_callback_failed" ? "Authentication failed. Please try again." : "");
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -33,11 +30,11 @@ function LoginForm() {
     setErrors({});
     setServerError("");
 
-    const result = loginSchema.safeParse(formData);
+    const result = resetPasswordSchema.safeParse(formData);
     if (!result.success) {
-      const fieldErrors: Partial<Record<keyof LoginFormData, string>> = {};
+      const fieldErrors: FieldErrors = {};
       for (const issue of result.error.issues) {
-        const field = issue.path[0] as keyof LoginFormData;
+        const field = issue.path[0] as keyof ResetPasswordFormData;
         if (!fieldErrors[field]) {
           fieldErrors[field] = issue.message;
         }
@@ -50,8 +47,7 @@ function LoginForm() {
 
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
-      email: result.data.email,
+    const { error } = await supabase.auth.updateUser({
       password: result.data.password,
     });
 
@@ -61,16 +57,35 @@ function LoginForm() {
       return;
     }
 
-    router.push(redirectedFrom || "/dashboard");
+    setSuccess(true);
+    setLoading(false);
+  }
+
+  if (success) {
+    return (
+      <GlassCard className="w-full max-w-md" padding="lg">
+        <h1 className="mb-2 text-center font-black text-white" style={{ fontSize: "clamp(1.4rem, 4vw, 2.5rem)" }}>
+          Password Updated
+        </h1>
+        <p className="mb-6 text-center text-white/75">
+          Your password has been reset successfully.
+        </p>
+        <p className="text-center text-sm text-white/60">
+          <Link href="/login" className="text-white underline underline-offset-4 hover:text-white/90">
+            Sign in with your new password
+          </Link>
+        </p>
+      </GlassCard>
+    );
   }
 
   return (
     <GlassCard className="w-full max-w-md" padding="lg">
       <h1 className="mb-2 text-center font-black text-white" style={{ fontSize: "clamp(1.4rem, 4vw, 2.5rem)" }}>
-        Welcome Back
+        Reset Password
       </h1>
       <p className="mb-8 text-center text-white/75">
-        Sign in to your account
+        Enter your new password below
       </p>
 
       {serverError && (
@@ -81,31 +96,14 @@ function LoginForm() {
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-white/75">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            placeholder="you@example.com"
-            className={errors.email ? errorInputClasses : inputClasses}
-            value={formData.email}
-            onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
-          />
-          {errors.email && (
-            <p className="mt-1 text-sm text-red-400">{errors.email}</p>
-          )}
-        </div>
-
-        <div>
           <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-white/75">
-            Password
+            New Password
           </label>
           <div className="relative">
             <input
               id="password"
               type={showPassword ? "text" : "password"}
-              placeholder="Enter your password"
+              placeholder="At least 8 characters with a number"
               className={errors.password ? errorInputClasses : inputClasses}
               value={formData.password}
               onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
@@ -121,37 +119,40 @@ function LoginForm() {
           {errors.password && (
             <p className="mt-1 text-sm text-red-400">{errors.password}</p>
           )}
-          <div className="mt-1.5 text-right">
-            <Link href="/forgot-password" className="text-sm text-white/50 underline underline-offset-4 hover:text-white/75">
-              Forgot password?
-            </Link>
-          </div>
+        </div>
+
+        <div>
+          <label htmlFor="confirmPassword" className="mb-1.5 block text-sm font-medium text-white/75">
+            Confirm New Password
+          </label>
+          <input
+            id="confirmPassword"
+            type="password"
+            placeholder="Re-enter your new password"
+            className={errors.confirmPassword ? errorInputClasses : inputClasses}
+            value={formData.confirmPassword}
+            onChange={(e) => setFormData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+          />
+          {errors.confirmPassword && (
+            <p className="mt-1 text-sm text-red-400">{errors.confirmPassword}</p>
+          )}
         </div>
 
         <CTAButton
           type="submit"
           loading={loading}
           className="w-full"
-          aria-label="Sign in to your account"
+          aria-label="Reset your password"
         >
-          Sign In
+          Reset Password
         </CTAButton>
       </form>
 
       <p className="mt-6 text-center text-sm text-white/60">
-        Don&apos;t have an account?{" "}
-        <Link href="/signup" className="text-white underline underline-offset-4 hover:text-white/90">
-          Sign up
+        <Link href="/login" className="text-white underline underline-offset-4 hover:text-white/90">
+          Back to sign in
         </Link>
       </p>
     </GlassCard>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense>
-      <LoginForm />
-    </Suspense>
   );
 }
