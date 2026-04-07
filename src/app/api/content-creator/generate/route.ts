@@ -54,19 +54,19 @@ Rules:
 - Return ONLY the numbered list, no other text`;
 
     case 4:
-      return `Write a 30-second video script about: "${topic}"
+      return `Write a 60-second video script about: "${topic}"
 
 Use this opening hook to start: "${selectedHook}"
 
 Follow the problem-solution framework:
 1. HOOK (use the provided hook above)
-2. AGITATE - Expand on the problem (2-3 sentences)
-3. SOLVE - Present the solution clearly (2-3 sentences)
-4. CTA - End with a strong call to action (1 sentence)
+2. AGITATE - Expand on the problem (3-4 sentences)
+3. SOLVE - Present the solution clearly (3-4 sentences)
+4. CTA - End with a strong call to action (1-2 sentences)
 
 Rules:
 - Keep it conversational and natural
-- Aim for roughly 75-90 words total (30 seconds of speaking)
+- Aim for roughly 150-180 words total (60 seconds of speaking)
 - Use short, punchy sentences
 - Return ONLY the script text, no labels or headers`;
 
@@ -106,7 +106,7 @@ function parseResponse(step: number, text: string): string[] | string {
 
 export async function POST(request: NextRequest) {
   const rateLimitKey = `content-creator:${getRateLimitKey(request)}`;
-  const { allowed } = checkRateLimit(rateLimitKey, 5, 60_000);
+  const { allowed } = checkRateLimit(rateLimitKey, 10, 60_000);
   if (!allowed) {
     return createErrorResponse("Too many requests. Please try again in a minute.", 429);
   }
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
     const anthropic = getAnthropicClient();
     const message = await anthropic.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 1024,
+      max_tokens: 2048,
       messages: [{ role: "user", content: prompt }],
     });
 

@@ -49,10 +49,12 @@ function CopyButton({ text, label = "Copy" }: { text: string; label?: string }) 
     <button
       type="button"
       onClick={handleCopy}
-      className="shrink-0 rounded-lg border border-white/20 px-3 py-1.5 text-sm font-medium text-white/75 transition-colors hover:bg-white/10 hover:text-white"
+      className="cta-btn-static inline-block shrink-0"
       aria-label={copied ? "Copied" : label}
     >
-      {copied ? "Copied!" : label}
+      <span className="cta-btn-inside block px-3 py-1.5 text-sm">
+        {copied ? "Copied!" : label}
+      </span>
     </button>
   );
 }
@@ -71,16 +73,17 @@ function RegenerateButton({
       type="button"
       onClick={onClick}
       disabled={loading}
-      className="shrink-0 rounded-lg border border-white/20 px-3 py-1.5 text-sm font-medium text-white/75 transition-colors hover:bg-white/10 hover:text-white disabled:pointer-events-none disabled:opacity-40"
+      className={`cta-btn-static relative inline-block shrink-0 ${loading ? "pointer-events-none opacity-50" : ""}`}
       aria-label={loading ? "Regenerating..." : label}
+      aria-busy={loading}
     >
-      {loading ? (
-        <span className="flex items-center gap-1.5">
-          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-          Regenerating...
+      <span className={`cta-btn-inside block px-3 py-1.5 text-sm ${loading ? "opacity-0" : ""}`}>
+        {label}
+      </span>
+      {loading && (
+        <span className="absolute inset-0 flex items-center justify-center">
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
         </span>
-      ) : (
-        label
       )}
     </button>
   );
@@ -273,7 +276,10 @@ export default function ContentCreatorWizard() {
   return (
     <section className="section-padding relative z-30">
       <div className="mx-auto max-w-3xl">
-        <SectionHeading subtitle="Generate headlines, hooks, scripts, and descriptions for your video content">
+        <SectionHeading
+          accentColor="blue"
+          subtitle="Generate headlines, hooks, scripts, and descriptions for your video content"
+        >
           AI CONTENT CREATOR
         </SectionHeading>
 
@@ -355,6 +361,12 @@ export default function ContentCreatorWizard() {
                   label="Regenerate Headlines"
                 />
               </div>
+              <WizardNavigation
+                currentStep={currentStep}
+                loading={loading}
+                onBack={handleBack}
+                onNext={handleNext}
+              />
             </GlassCard>
           )}
 
@@ -395,6 +407,12 @@ export default function ContentCreatorWizard() {
                   </div>
                 </>
               )}
+              <WizardNavigation
+                currentStep={currentStep}
+                loading={loading}
+                onBack={handleBack}
+                onNext={handleNext}
+              />
             </GlassCard>
           )}
 
@@ -403,7 +421,7 @@ export default function ContentCreatorWizard() {
             <GlassCard>
               <h3 className="text-xl font-black">Your Script</h3>
               <p className="mt-2 text-sm text-white/75">
-                A 30-second video script based on your selected hook.
+                A 60-second video script based on your selected hook.
               </p>
               <div className="mt-6 rounded-lg border border-white/15 bg-white/5 p-4">
                 <p className="whitespace-pre-wrap text-sm leading-relaxed">{script}</p>
@@ -416,6 +434,12 @@ export default function ContentCreatorWizard() {
                 />
                 <CopyButton text={script} label="Copy Script" />
               </div>
+              <WizardNavigation
+                currentStep={currentStep}
+                loading={loading}
+                onBack={handleBack}
+                onNext={handleNext}
+              />
             </GlassCard>
           )}
 
@@ -437,6 +461,12 @@ export default function ContentCreatorWizard() {
                 />
                 <CopyButton text={description} label="Copy Description" />
               </div>
+              <WizardNavigation
+                currentStep={currentStep}
+                loading={loading}
+                onBack={handleBack}
+                onNext={handleNext}
+              />
             </GlassCard>
           )}
 
@@ -533,13 +563,6 @@ export default function ContentCreatorWizard() {
             </div>
           )}
         </div>
-
-        <WizardNavigation
-          currentStep={currentStep}
-          loading={loading}
-          onBack={handleBack}
-          onNext={handleNext}
-        />
       </div>
     </section>
   );

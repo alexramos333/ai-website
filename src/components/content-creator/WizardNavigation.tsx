@@ -29,7 +29,7 @@ export default function WizardNavigation({
   const nextLabel = currentStep === 5 ? "Review All" : "Next";
 
   return (
-    <div className="mt-8 flex items-center justify-between">
+    <div className="mt-6 flex items-center justify-between">
       {showBack ? (
         <button
           type="button"
