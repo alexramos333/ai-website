@@ -124,3 +124,22 @@ export const contentCreatorSchema = z
   );
 
 export type ContentCreatorFormData = z.infer<typeof contentCreatorSchema>;
+
+// ─── Google Ads RSA Wizard ───
+export type GoogleAdsStep = 1 | 2 | 3 | 4;
+
+export const googleAdsSchema = z
+  .object({
+    step: z.number().int().min(2).max(3),
+    keywords: z.string().min(3, "Keywords must be at least 3 characters").max(2000, "Keywords must be 2000 characters or less"),
+    headlines: z.array(z.string()).optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.step === 3 && (!data.headlines || data.headlines.length === 0)) return false;
+      return true;
+    },
+    { message: "Headlines are required for this step", path: ["headlines"] },
+  );
+
+export type GoogleAdsFormData = z.infer<typeof googleAdsSchema>;

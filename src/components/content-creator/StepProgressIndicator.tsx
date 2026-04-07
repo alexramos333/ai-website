@@ -1,31 +1,22 @@
 "use client";
 
-import type { WizardStep } from "@/lib/utils/validation";
-
-const stepLabels = [
-  "Topic",
-  "Headlines",
-  "Hooks",
-  "Script",
-  "Description",
-  "Review",
-] as const;
-
 interface StepProgressIndicatorProps {
-  currentStep: WizardStep;
-  maxReachedStep: WizardStep;
-  onStepClick: (step: WizardStep) => void;
+  labels: readonly string[];
+  currentStep: number;
+  maxReachedStep: number;
+  onStepClick: (step: number) => void;
 }
 
 export default function StepProgressIndicator({
+  labels,
   currentStep,
   maxReachedStep,
   onStepClick,
 }: StepProgressIndicatorProps) {
   return (
     <div className="flex items-center justify-center gap-0">
-      {stepLabels.map((label, i) => {
-        const stepNum = (i + 1) as WizardStep;
+      {labels.map((label, i) => {
+        const stepNum = i + 1;
         const isActive = stepNum === currentStep;
         const isCompleted = stepNum < currentStep;
         const isClickable = stepNum <= maxReachedStep;
@@ -98,7 +89,7 @@ export default function StepProgressIndicator({
                 {label}
               </span>
             </div>
-            {i < stepLabels.length - 1 && (
+            {i < labels.length - 1 && (
               <div
                 className={`mx-1 h-0.5 w-4 sm:mx-2 sm:w-8 ${
                   stepNum < currentStep ? "bg-[#004be0]" : "bg-white/10"

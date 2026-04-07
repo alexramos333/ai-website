@@ -24,6 +24,7 @@ const navLinks: NavLink[] = [
     href: "/portfolio",
     children: [
       { label: "Content Creation Software", href: "/content-creator" },
+      { label: "Google Ads Software", href: "/google-ads" },
     ],
   },
   { label: "Blog", href: "/blog" },

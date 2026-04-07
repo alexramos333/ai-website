@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import type { WizardStep } from "@/lib/utils/validation";
+import type { GoogleAdsStep } from "@/lib/utils/validation";
 import GlassCard from "@/components/ui/GlassCard";
 import SectionHeading from "@/components/ui/SectionHeading";
 import CTAButton from "@/components/ui/CTAButton";
-import StepProgressIndicator from "./StepProgressIndicator";
+import StepProgressIndicator from "@/components/content-creator/StepProgressIndicator";
 
 interface GenerateResponse {
-  result: string[] | string;
+  result: string[];
 }
 
 async function copyToClipboard(text: string): Promise<boolean> {
@@ -154,41 +154,38 @@ function NavNextButton({
   );
 }
 
-export default function ContentCreatorWizard() {
-  const [currentStep, setCurrentStep] = useState<WizardStep>(1);
-  const [maxReachedStep, setMaxReachedStep] = useState<WizardStep>(1);
-  const [topic, setTopic] = useState("");
+const STEP_LABELS = ["Keywords", "Headlines", "Descriptions", "Review"] as const;
+
+export default function GoogleAdsWizard() {
+  const [currentStep, setCurrentStep] = useState<GoogleAdsStep>(1);
+  const [maxReachedStep, setMaxReachedStep] = useState<GoogleAdsStep>(1);
+  const [keywords, setKeywords] = useState("");
   const [headlines, setHeadlines] = useState<string[]>([]);
-  const [hooks, setHooks] = useState<string[]>([]);
-  const [selectedHook, setSelectedHook] = useState("");
-  const [script, setScript] = useState("");
-  const [description, setDescription] = useState("");
+  const [descriptions, setDescriptions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [topicError, setTopicError] = useState("");
+  const [keywordsError, setKeywordsError] = useState("");
 
-  const advanceMaxStep = (step: WizardStep) => {
-    setMaxReachedStep((prev) => Math.max(prev, step) as WizardStep);
+  const advanceMaxStep = (step: GoogleAdsStep) => {
+    setMaxReachedStep((prev) => Math.max(prev, step) as GoogleAdsStep);
   };
 
   const generate = useCallback(
     async (
       step: number,
-      overrides?: { selectedHook?: string; script?: string },
+      overrides?: { headlines?: string[] },
     ): Promise<GenerateResponse | null> => {
       setLoading(true);
       setError("");
 
       try {
-        const response = await fetch("/api/content-creator/generate", {
+        const response = await fetch("/api/google-ads/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             step,
-            topic,
-            headlines: headlines.length > 0 ? headlines : undefined,
-            selectedHook: overrides?.selectedHook ?? (selectedHook || undefined),
-            script: overrides?.script ?? (script || undefined),
+            keywords,
+            headlines: overrides?.headlines ?? (headlines.length > 0 ? headlines : undefined),
           }),
         });
 
@@ -206,17 +203,17 @@ export default function ContentCreatorWizard() {
         setLoading(false);
       }
     },
-    [topic, headlines, selectedHook, script],
+    [keywords, headlines],
   );
 
   // ─── Forward navigation handlers ───
 
   const handleGenerateHeadlines = async () => {
-    if (topic.trim().length < 3) {
-      setTopicError("Topic must be at least 3 characters.");
+    if (keywords.trim().length < 3) {
+      setKeywordsError("Please enter at least a few keywords.");
       return;
     }
-    setTopicError("");
+    setKeywordsError("");
     const data = await generate(2);
     if (data && Array.isArray(data.result)) {
       setHeadlines(data.result);
@@ -225,69 +222,29 @@ export default function ContentCreatorWizard() {
     }
   };
 
-  const handleGenerateHooks = async () => {
+  const handleGenerateDescriptions = async () => {
     const data = await generate(3);
     if (data && Array.isArray(data.result)) {
-      setHooks(data.result);
+      setDescriptions(data.result);
       setCurrentStep(3);
       advanceMaxStep(3);
     }
   };
 
-  const handleSelectHook = async (hook: string) => {
-    setSelectedHook(hook);
-    const data = await generate(4, { selectedHook: hook });
-    if (data && typeof data.result === "string") {
-      setScript(data.result);
-      setCurrentStep(4);
-      advanceMaxStep(4);
-    }
-  };
-
-  const handleGenerateDescription = async () => {
-    const data = await generate(5, { script });
-    if (data && typeof data.result === "string") {
-      setDescription(data.result);
-      setCurrentStep(5);
-      advanceMaxStep(5);
-    }
-  };
-
-  // ─── Regenerate handlers (stay on current step, clear downstream) ───
+  // ─── Regenerate handlers ───
 
   const handleRegenerateHeadlines = async () => {
     const data = await generate(2);
     if (data && Array.isArray(data.result)) {
       setHeadlines(data.result);
-      setHooks([]);
-      setSelectedHook("");
-      setScript("");
-      setDescription("");
+      setDescriptions([]);
     }
   };
 
-  const handleRegenerateHooks = async () => {
+  const handleRegenerateDescriptions = async () => {
     const data = await generate(3);
     if (data && Array.isArray(data.result)) {
-      setHooks(data.result);
-      setSelectedHook("");
-      setScript("");
-      setDescription("");
-    }
-  };
-
-  const handleRegenerateScript = async () => {
-    const data = await generate(4, { selectedHook });
-    if (data && typeof data.result === "string") {
-      setScript(data.result);
-      setDescription("");
-    }
-  };
-
-  const handleRegenerateDescription = async () => {
-    const data = await generate(5, { script });
-    if (data && typeof data.result === "string") {
-      setDescription(data.result);
+      setDescriptions(data.result);
     }
   };
 
@@ -295,7 +252,7 @@ export default function ContentCreatorWizard() {
 
   const handleBack = () => {
     if (currentStep > 1) {
-      setCurrentStep((currentStep - 1) as WizardStep);
+      setCurrentStep((currentStep - 1) as GoogleAdsStep);
       setError("");
     }
   };
@@ -304,21 +261,18 @@ export default function ContentCreatorWizard() {
     setError("");
     switch (currentStep) {
       case 2:
-        handleGenerateHooks();
+        handleGenerateDescriptions();
         break;
-      case 4:
-        handleGenerateDescription();
-        break;
-      case 5:
-        setCurrentStep(6);
-        advanceMaxStep(6);
+      case 3:
+        setCurrentStep(4);
+        advanceMaxStep(4);
         break;
     }
   };
 
   const handleStepClick = (step: number) => {
     if (step <= maxReachedStep) {
-      setCurrentStep(step as WizardStep);
+      setCurrentStep(step as GoogleAdsStep);
       setError("");
     }
   };
@@ -326,31 +280,28 @@ export default function ContentCreatorWizard() {
   const handleStartOver = () => {
     setCurrentStep(1);
     setMaxReachedStep(1);
-    setTopic("");
+    setKeywords("");
     setHeadlines([]);
-    setHooks([]);
-    setSelectedHook("");
-    setScript("");
-    setDescription("");
+    setDescriptions([]);
     setError("");
-    setTopicError("");
+    setKeywordsError("");
   };
 
-  const allContent = `TOPIC: ${topic}\n\n--- HEADLINES ---\n${headlines.map((h, i) => `${i + 1}. ${h}`).join("\n")}\n\n--- SELECTED HOOK ---\n${selectedHook}\n\n--- SCRIPT ---\n${script}\n\n--- DESCRIPTION ---\n${description}`;
+  const allContent = `KEYWORDS:\n${keywords}\n\n--- HEADLINES (30 chars max each) ---\n${headlines.map((h, i) => `${i + 1}. ${h}`).join("\n")}\n\n--- DESCRIPTIONS (90 chars max each) ---\n${descriptions.map((d, i) => `${i + 1}. ${d}`).join("\n")}`;
 
   return (
     <section className="section-padding relative z-30">
       <div className="mx-auto max-w-3xl">
         <SectionHeading
           accentColor="blue"
-          subtitle="Generate headlines, hooks, scripts, and descriptions for your video content"
+          subtitle="Generate high-converting RSA headlines and descriptions for your Google Ads campaigns"
         >
-          AI CONTENT CREATOR
+          GOOGLE ADS RSA GENERATOR
         </SectionHeading>
 
         <div className="mt-10">
           <StepProgressIndicator
-            labels={["Topic", "Headlines", "Hooks", "Script", "Description", "Review"]}
+            labels={STEP_LABELS}
             currentStep={currentStep}
             maxReachedStep={maxReachedStep}
             onStepClick={handleStepClick}
@@ -364,34 +315,34 @@ export default function ContentCreatorWizard() {
         )}
 
         <div className="mt-8">
-          {/* ─── Step 1: Topic ─── */}
+          {/* ─── Step 1: Keywords ─── */}
           {currentStep === 1 && (
             <GlassCard>
-              <h3 className="text-xl font-black">What&apos;s your video about?</h3>
+              <h3 className="text-xl font-black">Enter Your Keywords</h3>
               <p className="mt-2 text-sm text-white/75">
-                Enter your video topic or idea and we&apos;ll generate compelling content for you.
+                Copy and paste all the keywords you want to use for your Google Ads campaign.
+                Enter one keyword or phrase per line, or separate them with commas.
               </p>
               <div className="mt-6">
-                <input
-                  type="text"
-                  value={topic}
+                <textarea
+                  value={keywords}
                   onChange={(e) => {
-                    setTopic(e.target.value);
-                    if (topicError) setTopicError("");
+                    setKeywords(e.target.value);
+                    if (keywordsError) setKeywordsError("");
                   }}
-                  placeholder="e.g., How to start a profitable side hustle in 2026"
-                  className="w-full rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white placeholder-white/40 outline-none transition-colors focus:border-white/40"
-                  maxLength={200}
-                  aria-label="Video topic"
+                  placeholder={"e.g.,\nplumber near me\nemergency plumbing service\naffordable plumber\n24 hour plumber\nlocal plumbing company"}
+                  className="h-48 w-full resize-y rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white placeholder-white/40 outline-none transition-colors focus:border-white/40"
+                  maxLength={2000}
+                  aria-label="Campaign keywords"
                 />
-                {topicError && (
-                  <p className="mt-2 text-sm text-red-400">{topicError}</p>
+                {keywordsError && (
+                  <p className="mt-2 text-sm text-red-400">{keywordsError}</p>
                 )}
               </div>
               <div className="mt-6 text-center">
                 <CTAButton
                   onClick={handleGenerateHeadlines}
-                  aria-label="Generate headlines for your topic"
+                  aria-label="Generate headlines from your keywords"
                 >
                   {loading ? "Generating..." : "Generate Headlines"}
                 </CTAButton>
@@ -402,9 +353,9 @@ export default function ContentCreatorWizard() {
           {/* ─── Step 2: Headlines ─── */}
           {currentStep === 2 && (
             <GlassCard>
-              <h3 className="text-xl font-black">Your Headlines</h3>
+              <h3 className="text-xl font-black">Your RSA Headlines</h3>
               <p className="mt-2 text-sm text-white/75">
-                Here are 10 headline options for your video. Copy any that you like.
+                30 high-converting headlines for your Google RSA campaign. Each headline is 30 characters or fewer.
               </p>
               <div className="mt-6 space-y-3">
                 {headlines.map((headline, i) => (
@@ -434,109 +385,62 @@ export default function ContentCreatorWizard() {
             </GlassCard>
           )}
 
-          {/* ─── Step 3: Hooks ─── */}
+          {/* ─── Step 3: Descriptions ─── */}
           {currentStep === 3 && (
             <GlassCard>
-              <h3 className="text-xl font-black">Choose Your Hook</h3>
+              <h3 className="text-xl font-black">Your RSA Descriptions</h3>
               <p className="mt-2 text-sm text-white/75">
-                Select a hook to use as your video opener. This will generate a script based on your choice.
+                30 high-converting descriptions for your Google RSA campaign. Each description is 90 characters or fewer.
               </p>
-              {loading ? (
+              {loading && descriptions.length === 0 ? (
                 <div className="mt-8 flex flex-col items-center gap-3">
                   <span className="h-8 w-8 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                   <p className="text-sm text-white/75">Loading...</p>
                 </div>
               ) : (
                 <div className="mt-6 space-y-3">
-                  {hooks.map((hook, i) => (
-                    <button
+                  {descriptions.map((desc, i) => (
+                    <div
                       key={i}
-                      type="button"
-                      onClick={() => handleSelectHook(hook)}
-                      className="w-full rounded-lg border border-white/15 bg-white/5 p-4 text-left text-sm transition-colors hover:border-white/30 hover:bg-white/10"
-                      aria-label={`Select hook: ${hook}`}
+                      className="flex items-center justify-between gap-3 rounded-lg border border-white/15 bg-white/5 p-3"
                     >
-                      <span className="mr-2 font-bold text-white/50">{i + 1}.</span>
-                      {hook}
-                    </button>
+                      <span className="text-sm">
+                        <span className="mr-2 font-bold text-white/50">{i + 1}.</span>
+                        {desc}
+                      </span>
+                      <CopyButtonSmall text={desc} />
+                    </div>
                   ))}
                 </div>
               )}
               <div className="mt-6 flex items-center justify-between">
                 <NavBackButton onClick={handleBack} />
-                <RegenerateButton
-                  onClick={handleRegenerateHooks}
-                  loading={loading}
-                  label="Regenerate Hooks"
-                />
-              </div>
-            </GlassCard>
-          )}
-
-          {/* ─── Step 4: Script ─── */}
-          {currentStep === 4 && (
-            <GlassCard>
-              <h3 className="text-xl font-black">Your Script</h3>
-              <p className="mt-2 text-sm text-white/75">
-                A 60-second video script based on your selected hook.
-              </p>
-              <div className="mt-6 rounded-lg border border-white/15 bg-white/5 p-4">
-                <p className="whitespace-pre-wrap text-sm leading-relaxed">{script}</p>
-              </div>
-              <div className="mt-6 flex items-center justify-between">
-                <NavBackButton onClick={handleBack} />
                 <div className="flex items-center gap-3">
                   <RegenerateButton
-                    onClick={handleRegenerateScript}
+                    onClick={handleRegenerateDescriptions}
                     loading={loading}
-                    label="Regenerate Script"
+                    label="Regenerate Descriptions"
                   />
-                  <CopyButton text={script} label="Copy Script" />
-                  <NavNextButton onClick={handleNext} loading={loading} />
-                </div>
-              </div>
-            </GlassCard>
-          )}
-
-          {/* ─── Step 5: Description ─── */}
-          {currentStep === 5 && (
-            <GlassCard>
-              <h3 className="text-xl font-black">SEO Description</h3>
-              <p className="mt-2 text-sm text-white/75">
-                An optimized video description with hashtags and call to action.
-              </p>
-              <div className="mt-6 rounded-lg border border-white/15 bg-white/5 p-4">
-                <p className="whitespace-pre-wrap text-sm leading-relaxed">{description}</p>
-              </div>
-              <div className="mt-6 flex items-center justify-between">
-                <NavBackButton onClick={handleBack} />
-                <div className="flex items-center gap-3">
-                  <RegenerateButton
-                    onClick={handleRegenerateDescription}
-                    loading={loading}
-                    label="Regenerate Description"
-                  />
-                  <CopyButton text={description} label="Copy Description" />
                   <NavNextButton onClick={handleNext} loading={loading} label="Review All" />
                 </div>
               </div>
             </GlassCard>
           )}
 
-          {/* ─── Step 6: Review ─── */}
-          {currentStep === 6 && (
+          {/* ─── Step 4: Review ─── */}
+          {currentStep === 4 && (
             <div className="space-y-6">
               <GlassCard>
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-black">Topic</h3>
-                  <CopyButton text={topic} />
+                  <h3 className="text-lg font-black">Keywords</h3>
+                  <CopyButton text={keywords} />
                 </div>
-                <p className="mt-2 text-sm text-white/75">{topic}</p>
+                <p className="mt-2 whitespace-pre-wrap text-sm text-white/75">{keywords}</p>
               </GlassCard>
 
               <GlassCard>
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-black">Headlines</h3>
+                  <h3 className="text-lg font-black">Headlines (30 chars max)</h3>
                   <div className="flex gap-2">
                     <RegenerateButton
                       onClick={handleRegenerateHeadlines}
@@ -567,49 +471,38 @@ export default function ContentCreatorWizard() {
 
               <GlassCard>
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-black">Selected Hook</h3>
-                  <CopyButton text={selectedHook} />
-                </div>
-                <p className="mt-2 text-sm text-white/75">{selectedHook}</p>
-              </GlassCard>
-
-              <GlassCard>
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-black">Script</h3>
+                  <h3 className="text-lg font-black">Descriptions (90 chars max)</h3>
                   <div className="flex gap-2">
                     <RegenerateButton
-                      onClick={handleRegenerateScript}
+                      onClick={handleRegenerateDescriptions}
                       loading={loading}
                       label="Regenerate"
                     />
-                    <CopyButton text={script} label="Copy Script" />
-                  </div>
-                </div>
-                <div className="mt-3 rounded-lg border border-white/10 bg-white/5 p-3">
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed">{script}</p>
-                </div>
-              </GlassCard>
-
-              <GlassCard>
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-black">SEO Description</h3>
-                  <div className="flex gap-2">
-                    <RegenerateButton
-                      onClick={handleRegenerateDescription}
-                      loading={loading}
-                      label="Regenerate"
+                    <CopyButton
+                      text={descriptions.map((d, i) => `${i + 1}. ${d}`).join("\n")}
+                      label="Copy All"
                     />
-                    <CopyButton text={description} label="Copy Description" />
                   </div>
                 </div>
-                <div className="mt-3 rounded-lg border border-white/10 bg-white/5 p-3">
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed">{description}</p>
+                <div className="mt-3 space-y-2">
+                  {descriptions.map((desc, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/5 p-2.5"
+                    >
+                      <span className="text-sm">
+                        <span className="mr-2 font-bold text-white/50">{i + 1}.</span>
+                        {desc}
+                      </span>
+                      <CopyButtonSmall text={desc} />
+                    </div>
+                  ))}
                 </div>
               </GlassCard>
 
               <div className="flex flex-col items-center gap-4 pt-4">
                 <CopyButton text={allContent} label="Copy All Content" />
-                <CTAButton onClick={handleStartOver} aria-label="Start over with a new topic">
+                <CTAButton onClick={handleStartOver} aria-label="Start over with new keywords">
                   Start Over
                 </CTAButton>
               </div>
