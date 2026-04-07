@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import type { GoogleAdsStep } from "@/lib/utils/validation";
 import GlassCard from "@/components/ui/GlassCard";
 import SectionHeading from "@/components/ui/SectionHeading";
@@ -157,6 +157,9 @@ function NavNextButton({
 const STEP_LABELS = ["Keywords", "Headlines", "Descriptions", "Review"] as const;
 
 export default function GoogleAdsWizard() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const scrollToTop = () => sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+
   const [currentStep, setCurrentStep] = useState<GoogleAdsStep>(1);
   const [maxReachedStep, setMaxReachedStep] = useState<GoogleAdsStep>(1);
   const [keywords, setKeywords] = useState("");
@@ -219,6 +222,7 @@ export default function GoogleAdsWizard() {
       setHeadlines(data.result);
       setCurrentStep(2);
       advanceMaxStep(2);
+      scrollToTop();
     }
   };
 
@@ -228,6 +232,7 @@ export default function GoogleAdsWizard() {
       setDescriptions(data.result);
       setCurrentStep(3);
       advanceMaxStep(3);
+      scrollToTop();
     }
   };
 
@@ -254,6 +259,7 @@ export default function GoogleAdsWizard() {
     if (currentStep > 1) {
       setCurrentStep((currentStep - 1) as GoogleAdsStep);
       setError("");
+      scrollToTop();
     }
   };
 
@@ -266,6 +272,7 @@ export default function GoogleAdsWizard() {
       case 3:
         setCurrentStep(4);
         advanceMaxStep(4);
+        scrollToTop();
         break;
     }
   };
@@ -290,7 +297,7 @@ export default function GoogleAdsWizard() {
   const allContent = `KEYWORDS:\n${keywords}\n\n--- HEADLINES (30 chars max each) ---\n${headlines.map((h, i) => `${i + 1}. ${h}`).join("\n")}\n\n--- DESCRIPTIONS (90 chars max each) ---\n${descriptions.map((d, i) => `${i + 1}. ${d}`).join("\n")}`;
 
   return (
-    <section className="section-padding relative z-30">
+    <section ref={sectionRef} className="section-padding relative z-30">
       <div className="mx-auto max-w-3xl">
         <SectionHeading
           accentColor="blue"

@@ -195,6 +195,9 @@ function AutoExpandTextarea({
 const STEP_LABELS = ["Product Info", "Headlines", "Descriptions", "Primary Text", "Video Script", "Review"] as const;
 
 export default function FacebookAdsWizard() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const scrollToTop = () => sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+
   const [currentStep, setCurrentStep] = useState<FacebookAdsStep>(1);
   const [maxReachedStep, setMaxReachedStep] = useState<FacebookAdsStep>(1);
 
@@ -291,6 +294,7 @@ export default function FacebookAdsWizard() {
       setHeadlines(data.result);
       setCurrentStep(2);
       advanceMaxStep(2);
+      scrollToTop();
     }
   };
 
@@ -300,6 +304,7 @@ export default function FacebookAdsWizard() {
       setDescriptions(data.result);
       setCurrentStep(3);
       advanceMaxStep(3);
+      scrollToTop();
     }
   };
 
@@ -309,6 +314,7 @@ export default function FacebookAdsWizard() {
       setPrimaryTexts(data.result);
       setCurrentStep(4);
       advanceMaxStep(4);
+      scrollToTop();
     }
   };
 
@@ -318,6 +324,7 @@ export default function FacebookAdsWizard() {
       setVideoScript(data.result);
       setCurrentStep(5);
       advanceMaxStep(5);
+      scrollToTop();
     }
   };
 
@@ -363,6 +370,7 @@ export default function FacebookAdsWizard() {
     if (currentStep > 1) {
       setCurrentStep((currentStep - 1) as FacebookAdsStep);
       setError("");
+      scrollToTop();
     }
   };
 
@@ -381,6 +389,7 @@ export default function FacebookAdsWizard() {
       case 5:
         setCurrentStep(6);
         advanceMaxStep(6);
+        scrollToTop();
         break;
     }
   };
@@ -425,7 +434,7 @@ export default function FacebookAdsWizard() {
   const allContent = `PRODUCT INFO:\n${productInfoSummary}\n\n--- HEADLINES (40 chars max each) ---\n${headlines.map((h, i) => `${i + 1}. ${h}`).join("\n")}\n\n--- DESCRIPTIONS (30 chars max each) ---\n${descriptions.map((d, i) => `${i + 1}. ${d}`).join("\n")}\n\n--- PRIMARY TEXT (125 chars max each) ---\n${primaryTexts.map((p, i) => `${i + 1}. ${p}`).join("\n")}\n\n--- VIDEO SCRIPT ---\n${videoScript}`;
 
   return (
-    <section className="section-padding relative z-30">
+    <section ref={sectionRef} className="section-padding relative z-30">
       <div className="mx-auto max-w-3xl">
         <SectionHeading
           accentColor="blue"

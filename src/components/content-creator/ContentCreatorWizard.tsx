@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import type { WizardStep } from "@/lib/utils/validation";
 import GlassCard from "@/components/ui/GlassCard";
 import SectionHeading from "@/components/ui/SectionHeading";
@@ -155,6 +155,9 @@ function NavNextButton({
 }
 
 export default function ContentCreatorWizard() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const scrollToTop = () => sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+
   const [currentStep, setCurrentStep] = useState<WizardStep>(1);
   const [maxReachedStep, setMaxReachedStep] = useState<WizardStep>(1);
   const [topic, setTopic] = useState("");
@@ -222,6 +225,7 @@ export default function ContentCreatorWizard() {
       setHeadlines(data.result);
       setCurrentStep(2);
       advanceMaxStep(2);
+      scrollToTop();
     }
   };
 
@@ -231,6 +235,7 @@ export default function ContentCreatorWizard() {
       setHooks(data.result);
       setCurrentStep(3);
       advanceMaxStep(3);
+      scrollToTop();
     }
   };
 
@@ -241,6 +246,7 @@ export default function ContentCreatorWizard() {
       setScript(data.result);
       setCurrentStep(4);
       advanceMaxStep(4);
+      scrollToTop();
     }
   };
 
@@ -250,6 +256,7 @@ export default function ContentCreatorWizard() {
       setDescription(data.result);
       setCurrentStep(5);
       advanceMaxStep(5);
+      scrollToTop();
     }
   };
 
@@ -297,6 +304,7 @@ export default function ContentCreatorWizard() {
     if (currentStep > 1) {
       setCurrentStep((currentStep - 1) as WizardStep);
       setError("");
+      scrollToTop();
     }
   };
 
@@ -312,6 +320,7 @@ export default function ContentCreatorWizard() {
       case 5:
         setCurrentStep(6);
         advanceMaxStep(6);
+        scrollToTop();
         break;
     }
   };
@@ -339,7 +348,7 @@ export default function ContentCreatorWizard() {
   const allContent = `TOPIC: ${topic}\n\n--- HEADLINES ---\n${headlines.map((h, i) => `${i + 1}. ${h}`).join("\n")}\n\n--- SELECTED HOOK ---\n${selectedHook}\n\n--- SCRIPT ---\n${script}\n\n--- DESCRIPTION ---\n${description}`;
 
   return (
-    <section className="section-padding relative z-30">
+    <section ref={sectionRef} className="section-padding relative z-30">
       <div className="mx-auto max-w-3xl">
         <SectionHeading
           accentColor="blue"
