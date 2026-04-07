@@ -17,7 +17,6 @@ async function copyToClipboard(text: string): Promise<boolean> {
     await navigator.clipboard.writeText(text);
     return true;
   } catch {
-    // Fallback for older browsers
     const textarea = document.createElement("textarea");
     textarea.value = text;
     textarea.style.position = "fixed";
@@ -50,7 +49,7 @@ function CopyButton({ text, label = "Copy" }: { text: string; label?: string }) 
     <button
       type="button"
       onClick={handleCopy}
-      className="rounded-lg border border-white/20 px-3 py-1.5 text-sm font-medium text-white/75 transition-colors hover:bg-white/10 hover:text-white"
+      className="shrink-0 rounded-lg border border-white/20 px-3 py-1.5 text-sm font-medium text-white/75 transition-colors hover:bg-white/10 hover:text-white"
       aria-label={copied ? "Copied" : label}
     >
       {copied ? "Copied!" : label}
@@ -58,8 +57,38 @@ function CopyButton({ text, label = "Copy" }: { text: string; label?: string }) 
   );
 }
 
+function RegenerateButton({
+  onClick,
+  loading,
+  label = "Regenerate",
+}: {
+  onClick: () => void;
+  loading: boolean;
+  label?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={loading}
+      className="shrink-0 rounded-lg border border-white/20 px-3 py-1.5 text-sm font-medium text-white/75 transition-colors hover:bg-white/10 hover:text-white disabled:pointer-events-none disabled:opacity-40"
+      aria-label={loading ? "Regenerating..." : label}
+    >
+      {loading ? (
+        <span className="flex items-center gap-1.5">
+          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+          Regenerating...
+        </span>
+      ) : (
+        label
+      )}
+    </button>
+  );
+}
+
 export default function ContentCreatorWizard() {
   const [currentStep, setCurrentStep] = useState<WizardStep>(1);
+  const [maxReachedStep, setMaxReachedStep] = useState<WizardStep>(1);
   const [topic, setTopic] = useState("");
   const [headlines, setHeadlines] = useState<string[]>([]);
   const [hooks, setHooks] = useState<string[]>([]);
@@ -69,6 +98,10 @@ export default function ContentCreatorWizard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [topicError, setTopicError] = useState("");
+
+  const advanceMaxStep = (step: WizardStep) => {
+    setMaxReachedStep((prev) => Math.max(prev, step) as WizardStep);
+  };
 
   const generate = useCallback(
     async (
@@ -108,6 +141,8 @@ export default function ContentCreatorWizard() {
     [topic, headlines, selectedHook, script],
   );
 
+  // ─── Forward navigation handlers ───
+
   const handleGenerateHeadlines = async () => {
     if (topic.trim().length < 3) {
       setTopicError("Topic must be at least 3 characters.");
@@ -118,6 +153,7 @@ export default function ContentCreatorWizard() {
     if (data && Array.isArray(data.result)) {
       setHeadlines(data.result);
       setCurrentStep(2);
+      advanceMaxStep(2);
     }
   };
 
@@ -126,6 +162,7 @@ export default function ContentCreatorWizard() {
     if (data && Array.isArray(data.result)) {
       setHooks(data.result);
       setCurrentStep(3);
+      advanceMaxStep(3);
     }
   };
 
@@ -135,6 +172,7 @@ export default function ContentCreatorWizard() {
     if (data && typeof data.result === "string") {
       setScript(data.result);
       setCurrentStep(4);
+      advanceMaxStep(4);
     }
   };
 
@@ -143,8 +181,49 @@ export default function ContentCreatorWizard() {
     if (data && typeof data.result === "string") {
       setDescription(data.result);
       setCurrentStep(5);
+      advanceMaxStep(5);
     }
   };
+
+  // ─── Regenerate handlers (stay on current step, clear downstream) ───
+
+  const handleRegenerateHeadlines = async () => {
+    const data = await generate(2);
+    if (data && Array.isArray(data.result)) {
+      setHeadlines(data.result);
+      setHooks([]);
+      setSelectedHook("");
+      setScript("");
+      setDescription("");
+    }
+  };
+
+  const handleRegenerateHooks = async () => {
+    const data = await generate(3);
+    if (data && Array.isArray(data.result)) {
+      setHooks(data.result);
+      setSelectedHook("");
+      setScript("");
+      setDescription("");
+    }
+  };
+
+  const handleRegenerateScript = async () => {
+    const data = await generate(4, { selectedHook });
+    if (data && typeof data.result === "string") {
+      setScript(data.result);
+      setDescription("");
+    }
+  };
+
+  const handleRegenerateDescription = async () => {
+    const data = await generate(5, { script });
+    if (data && typeof data.result === "string") {
+      setDescription(data.result);
+    }
+  };
+
+  // ─── Navigation handlers ───
 
   const handleBack = () => {
     if (currentStep > 1) {
@@ -164,12 +243,21 @@ export default function ContentCreatorWizard() {
         break;
       case 5:
         setCurrentStep(6);
+        advanceMaxStep(6);
         break;
+    }
+  };
+
+  const handleStepClick = (step: WizardStep) => {
+    if (step <= maxReachedStep) {
+      setCurrentStep(step);
+      setError("");
     }
   };
 
   const handleStartOver = () => {
     setCurrentStep(1);
+    setMaxReachedStep(1);
     setTopic("");
     setHeadlines([]);
     setHooks([]);
@@ -190,7 +278,11 @@ export default function ContentCreatorWizard() {
         </SectionHeading>
 
         <div className="mt-10">
-          <StepProgressIndicator currentStep={currentStep} />
+          <StepProgressIndicator
+            currentStep={currentStep}
+            maxReachedStep={maxReachedStep}
+            onStepClick={handleStepClick}
+          />
         </div>
 
         {error && (
@@ -256,6 +348,13 @@ export default function ContentCreatorWizard() {
                   </div>
                 ))}
               </div>
+              <div className="mt-4 flex justify-end">
+                <RegenerateButton
+                  onClick={handleRegenerateHeadlines}
+                  loading={loading}
+                  label="Regenerate Headlines"
+                />
+              </div>
             </GlassCard>
           )}
 
@@ -272,20 +371,29 @@ export default function ContentCreatorWizard() {
                   <p className="text-sm text-white/75">Generating your script...</p>
                 </div>
               ) : (
-                <div className="mt-6 space-y-3">
-                  {hooks.map((hook, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => handleSelectHook(hook)}
-                      className="w-full rounded-lg border border-white/15 bg-white/5 p-4 text-left text-sm transition-colors hover:border-white/30 hover:bg-white/10"
-                      aria-label={`Select hook: ${hook}`}
-                    >
-                      <span className="mr-2 font-bold text-white/50">{i + 1}.</span>
-                      {hook}
-                    </button>
-                  ))}
-                </div>
+                <>
+                  <div className="mt-6 space-y-3">
+                    {hooks.map((hook, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => handleSelectHook(hook)}
+                        className="w-full rounded-lg border border-white/15 bg-white/5 p-4 text-left text-sm transition-colors hover:border-white/30 hover:bg-white/10"
+                        aria-label={`Select hook: ${hook}`}
+                      >
+                        <span className="mr-2 font-bold text-white/50">{i + 1}.</span>
+                        {hook}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="mt-4 flex justify-end">
+                    <RegenerateButton
+                      onClick={handleRegenerateHooks}
+                      loading={loading}
+                      label="Regenerate Hooks"
+                    />
+                  </div>
+                </>
               )}
             </GlassCard>
           )}
@@ -300,7 +408,12 @@ export default function ContentCreatorWizard() {
               <div className="mt-6 rounded-lg border border-white/15 bg-white/5 p-4">
                 <p className="whitespace-pre-wrap text-sm leading-relaxed">{script}</p>
               </div>
-              <div className="mt-4 flex justify-end">
+              <div className="mt-4 flex justify-end gap-3">
+                <RegenerateButton
+                  onClick={handleRegenerateScript}
+                  loading={loading}
+                  label="Regenerate Script"
+                />
                 <CopyButton text={script} label="Copy Script" />
               </div>
             </GlassCard>
@@ -316,7 +429,12 @@ export default function ContentCreatorWizard() {
               <div className="mt-6 rounded-lg border border-white/15 bg-white/5 p-4">
                 <p className="whitespace-pre-wrap text-sm leading-relaxed">{description}</p>
               </div>
-              <div className="mt-4 flex justify-end">
+              <div className="mt-4 flex justify-end gap-3">
+                <RegenerateButton
+                  onClick={handleRegenerateDescription}
+                  loading={loading}
+                  label="Regenerate Description"
+                />
                 <CopyButton text={description} label="Copy Description" />
               </div>
             </GlassCard>
@@ -336,10 +454,17 @@ export default function ContentCreatorWizard() {
               <GlassCard>
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-black">Headlines</h3>
-                  <CopyButton
-                    text={headlines.map((h, i) => `${i + 1}. ${h}`).join("\n")}
-                    label="Copy All"
-                  />
+                  <div className="flex gap-2">
+                    <RegenerateButton
+                      onClick={handleRegenerateHeadlines}
+                      loading={loading}
+                      label="Regenerate"
+                    />
+                    <CopyButton
+                      text={headlines.map((h, i) => `${i + 1}. ${h}`).join("\n")}
+                      label="Copy All"
+                    />
+                  </div>
                 </div>
                 <div className="mt-3 space-y-2">
                   {headlines.map((headline, i) => (
@@ -368,7 +493,14 @@ export default function ContentCreatorWizard() {
               <GlassCard>
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-black">Script</h3>
-                  <CopyButton text={script} label="Copy Script" />
+                  <div className="flex gap-2">
+                    <RegenerateButton
+                      onClick={handleRegenerateScript}
+                      loading={loading}
+                      label="Regenerate"
+                    />
+                    <CopyButton text={script} label="Copy Script" />
+                  </div>
                 </div>
                 <div className="mt-3 rounded-lg border border-white/10 bg-white/5 p-3">
                   <p className="whitespace-pre-wrap text-sm leading-relaxed">{script}</p>
@@ -378,7 +510,14 @@ export default function ContentCreatorWizard() {
               <GlassCard>
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-black">SEO Description</h3>
-                  <CopyButton text={description} label="Copy Description" />
+                  <div className="flex gap-2">
+                    <RegenerateButton
+                      onClick={handleRegenerateDescription}
+                      loading={loading}
+                      label="Regenerate"
+                    />
+                    <CopyButton text={description} label="Copy Description" />
+                  </div>
                 </div>
                 <div className="mt-3 rounded-lg border border-white/10 bg-white/5 p-3">
                   <p className="whitespace-pre-wrap text-sm leading-relaxed">{description}</p>
