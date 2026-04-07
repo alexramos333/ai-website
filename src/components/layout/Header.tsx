@@ -1,19 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import CTAButton from "@/components/ui/CTAButton";
+
+interface NavChild {
+  label: string;
+  href: string;
+}
 
 interface NavLink {
   label: string;
   href: string;
+  children?: NavChild[];
 }
 
 const navLinks: NavLink[] = [
   { label: "Home", href: "/" },
   { label: "Services", href: "/services" },
   { label: "Free Course", href: "/free-course" },
-  { label: "Portfolio", href: "/portfolio" },
+  {
+    label: "Portfolio",
+    href: "/portfolio",
+    children: [
+      { label: "Content Creation Software", href: "/content-creator" },
+    ],
+  },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
 ];
@@ -25,6 +37,9 @@ interface HeaderProps {
 export default function Header({ user = null }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+
+  const closeDropdown = useCallback(() => setOpenDropdown(null), []);
 
   useEffect(() => {
     let ticking = false;
@@ -58,15 +73,62 @@ export default function Header({ user = null }: HeaderProps) {
 
         {/* Desktop nav */}
         <div className="hidden items-center gap-8 md:flex">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-sm font-medium text-white/75 transition-colors hover:text-white"
-            >
-              {link.label}
-            </Link>
-          ))}
+          {navLinks.map((link) =>
+            link.children ? (
+              <div
+                key={link.href}
+                className="relative"
+                onMouseEnter={() => setOpenDropdown(link.href)}
+                onMouseLeave={closeDropdown}
+              >
+                <Link
+                  href={link.href}
+                  className="text-sm font-medium text-white/75 transition-colors hover:text-white"
+                >
+                  {link.label}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="ml-1 inline-block"
+                    aria-hidden="true"
+                  >
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </Link>
+                {openDropdown === link.href && (
+                  <div className="absolute left-0 top-full pt-2">
+                    <div className="min-w-[220px] rounded-lg border border-white/15 bg-[#001138]/95 py-2 shadow-lg backdrop-blur-sm">
+                      {link.children.map((child) => (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          className="block px-4 py-2 text-sm text-white/75 transition-colors hover:bg-white/10 hover:text-white"
+                          onClick={closeDropdown}
+                        >
+                          {child.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-sm font-medium text-white/75 transition-colors hover:text-white"
+              >
+                {link.label}
+              </Link>
+            ),
+          )}
           {user ? (
             <div className="flex items-center gap-4">
               <Link
@@ -125,14 +187,25 @@ export default function Header({ user = null }: HeaderProps) {
       >
         <div className="border-t border-white/10 bg-[#001138]/95 px-6 py-4">
           {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="block py-3 text-white/75 transition-colors hover:text-white"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              {link.label}
-            </Link>
+            <div key={link.href}>
+              <Link
+                href={link.href}
+                className="block py-3 text-white/75 transition-colors hover:text-white"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+              {link.children?.map((child) => (
+                <Link
+                  key={child.href}
+                  href={child.href}
+                  className="block py-2 pl-4 text-sm text-white/60 transition-colors hover:text-white"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {child.label}
+                </Link>
+              ))}
+            </div>
           ))}
           <div className="pt-3">
             {user ? (

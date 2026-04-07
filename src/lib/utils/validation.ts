@@ -89,3 +89,38 @@ export const resetPasswordSchema = z
   });
 
 export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
+
+// ─── Content Creator Wizard ───
+export type WizardStep = 1 | 2 | 3 | 4 | 5 | 6;
+
+export const contentCreatorSchema = z
+  .object({
+    step: z.number().int().min(2).max(5),
+    topic: z.string().min(3, "Topic must be at least 3 characters").max(200, "Topic must be 200 characters or less"),
+    headlines: z.array(z.string()).optional(),
+    selectedHook: z.string().optional(),
+    script: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.step >= 3 && (!data.headlines || data.headlines.length === 0)) return false;
+      return true;
+    },
+    { message: "Headlines are required for this step", path: ["headlines"] },
+  )
+  .refine(
+    (data) => {
+      if (data.step >= 4 && !data.selectedHook) return false;
+      return true;
+    },
+    { message: "A selected hook is required for this step", path: ["selectedHook"] },
+  )
+  .refine(
+    (data) => {
+      if (data.step === 5 && !data.script) return false;
+      return true;
+    },
+    { message: "A script is required for this step", path: ["script"] },
+  );
+
+export type ContentCreatorFormData = z.infer<typeof contentCreatorSchema>;

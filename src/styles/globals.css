@@ -95,6 +95,21 @@ body {
   }
 }
 
+/* ─── CTA Button Static (no animation) ─── */
+.cta-btn-static {
+  display: grid;
+  background: linear-gradient(135deg, #5de6fc, #67c3ff, #305ae7, #6000ff) !important;
+  padding: 0.6rem 0.6rem;
+  border-radius: 10px;
+  box-shadow:
+    5px 5px 0 0 #6000ff,
+    6px 6px 6px rgba(0, 0, 0, 0.7) !important;
+}
+
+.cta-btn-static .cta-btn-inside {
+  animation: none;
+}
+
 /* ─── Text Effects ─── */
 .text-3d {
   text-shadow:
