@@ -143,3 +143,59 @@ export const googleAdsSchema = z
   );
 
 export type GoogleAdsFormData = z.infer<typeof googleAdsSchema>;
+
+// ─── Facebook Ads Wizard ───
+export type FacebookAdsStep = 1 | 2 | 3 | 4 | 5 | 6;
+
+export const facebookAdsSchema = z
+  .object({
+    step: z.number().int().min(2).max(5),
+    productName: z.string().max(200).optional(),
+    productLink: z.string().max(500).optional(),
+    productDescription: z.string().max(2000).optional(),
+    mainProblem: z.string().max(2000).optional(),
+    mainResult: z.string().max(2000).optional(),
+    benefits: z.string().max(2000).optional(),
+    differentiators: z.string().max(2000).optional(),
+    headlines: z.array(z.string()).optional(),
+    descriptions: z.array(z.string()).optional(),
+    primaryTexts: z.array(z.string()).optional(),
+  })
+  .refine(
+    (data) => {
+      const hasAnyInput = [
+        data.productName,
+        data.productLink,
+        data.productDescription,
+        data.mainProblem,
+        data.mainResult,
+        data.benefits,
+        data.differentiators,
+      ].some((field) => field && field.trim().length > 0);
+      return hasAnyInput;
+    },
+    { message: "At least one product info field is required" },
+  )
+  .refine(
+    (data) => {
+      if (data.step >= 3 && (!data.headlines || data.headlines.length === 0)) return false;
+      return true;
+    },
+    { message: "Headlines are required for this step", path: ["headlines"] },
+  )
+  .refine(
+    (data) => {
+      if (data.step >= 4 && (!data.descriptions || data.descriptions.length === 0)) return false;
+      return true;
+    },
+    { message: "Descriptions are required for this step", path: ["descriptions"] },
+  )
+  .refine(
+    (data) => {
+      if (data.step >= 5 && (!data.primaryTexts || data.primaryTexts.length === 0)) return false;
+      return true;
+    },
+    { message: "Primary texts are required for this step", path: ["primaryTexts"] },
+  );
+
+export type FacebookAdsFormData = z.infer<typeof facebookAdsSchema>;
