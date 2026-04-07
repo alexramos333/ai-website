@@ -6,7 +6,6 @@ import GlassCard from "@/components/ui/GlassCard";
 import SectionHeading from "@/components/ui/SectionHeading";
 import CTAButton from "@/components/ui/CTAButton";
 import StepProgressIndicator from "./StepProgressIndicator";
-import WizardNavigation from "./WizardNavigation";
 
 interface GenerateResponse {
   result: string[] | string;
@@ -32,6 +31,29 @@ async function copyToClipboard(text: string): Promise<boolean> {
       document.body.removeChild(textarea);
     }
   }
+}
+
+function CopyButtonSmall({ text, label = "Copy" }: { text: string; label?: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    const success = await copyToClipboard(text);
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      className="shrink-0 rounded-lg border border-white/20 px-3 py-1.5 text-sm font-medium text-white/75 transition-colors hover:bg-white/10 hover:text-white"
+      aria-label={copied ? "Copied" : label}
+    >
+      {copied ? "Copied!" : label}
+    </button>
+  );
 }
 
 function CopyButton({ text, label = "Copy" }: { text: string; label?: string }) {
@@ -83,6 +105,49 @@ function RegenerateButton({
       {loading && (
         <span className="absolute inset-0 flex items-center justify-center">
           <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+        </span>
+      )}
+    </button>
+  );
+}
+
+function NavBackButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="cta-btn-static inline-block"
+      aria-label="Go to previous step"
+    >
+      <span className="cta-btn-inside block px-4 py-2.5 text-base">Back</span>
+    </button>
+  );
+}
+
+function NavNextButton({
+  onClick,
+  loading,
+  label = "Next",
+}: {
+  onClick: () => void;
+  loading: boolean;
+  label?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={loading}
+      className={`cta-btn-static relative inline-block ${loading ? "pointer-events-none opacity-50" : ""}`}
+      aria-label={loading ? "Generating content" : "Go to next step"}
+      aria-busy={loading}
+    >
+      <span className={`cta-btn-inside block px-4 py-2.5 text-base ${loading ? "opacity-0" : ""}`}>
+        {label}
+      </span>
+      {loading && (
+        <span className="absolute inset-0 flex items-center justify-center">
+          <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
         </span>
       )}
     </button>
@@ -350,23 +415,21 @@ export default function ContentCreatorWizard() {
                       <span className="mr-2 font-bold text-white/50">{i + 1}.</span>
                       {headline}
                     </span>
-                    <CopyButton text={headline} />
+                    <CopyButtonSmall text={headline} />
                   </div>
                 ))}
               </div>
-              <div className="mt-4 flex justify-end">
-                <RegenerateButton
-                  onClick={handleRegenerateHeadlines}
-                  loading={loading}
-                  label="Regenerate Headlines"
-                />
+              <div className="mt-6 flex items-center justify-between">
+                <NavBackButton onClick={handleBack} />
+                <div className="flex items-center gap-3">
+                  <RegenerateButton
+                    onClick={handleRegenerateHeadlines}
+                    loading={loading}
+                    label="Regenerate Headlines"
+                  />
+                  <NavNextButton onClick={handleNext} loading={loading} />
+                </div>
               </div>
-              <WizardNavigation
-                currentStep={currentStep}
-                loading={loading}
-                onBack={handleBack}
-                onNext={handleNext}
-              />
             </GlassCard>
           )}
 
@@ -380,39 +443,32 @@ export default function ContentCreatorWizard() {
               {loading ? (
                 <div className="mt-8 flex flex-col items-center gap-3">
                   <span className="h-8 w-8 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                  <p className="text-sm text-white/75">Generating your script...</p>
+                  <p className="text-sm text-white/75">Loading...</p>
                 </div>
               ) : (
-                <>
-                  <div className="mt-6 space-y-3">
-                    {hooks.map((hook, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => handleSelectHook(hook)}
-                        className="w-full rounded-lg border border-white/15 bg-white/5 p-4 text-left text-sm transition-colors hover:border-white/30 hover:bg-white/10"
-                        aria-label={`Select hook: ${hook}`}
-                      >
-                        <span className="mr-2 font-bold text-white/50">{i + 1}.</span>
-                        {hook}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="mt-4 flex justify-end">
-                    <RegenerateButton
-                      onClick={handleRegenerateHooks}
-                      loading={loading}
-                      label="Regenerate Hooks"
-                    />
-                  </div>
-                </>
+                <div className="mt-6 space-y-3">
+                  {hooks.map((hook, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => handleSelectHook(hook)}
+                      className="w-full rounded-lg border border-white/15 bg-white/5 p-4 text-left text-sm transition-colors hover:border-white/30 hover:bg-white/10"
+                      aria-label={`Select hook: ${hook}`}
+                    >
+                      <span className="mr-2 font-bold text-white/50">{i + 1}.</span>
+                      {hook}
+                    </button>
+                  ))}
+                </div>
               )}
-              <WizardNavigation
-                currentStep={currentStep}
-                loading={loading}
-                onBack={handleBack}
-                onNext={handleNext}
-              />
+              <div className="mt-6 flex items-center justify-between">
+                <NavBackButton onClick={handleBack} />
+                <RegenerateButton
+                  onClick={handleRegenerateHooks}
+                  loading={loading}
+                  label="Regenerate Hooks"
+                />
+              </div>
             </GlassCard>
           )}
 
@@ -426,20 +482,18 @@ export default function ContentCreatorWizard() {
               <div className="mt-6 rounded-lg border border-white/15 bg-white/5 p-4">
                 <p className="whitespace-pre-wrap text-sm leading-relaxed">{script}</p>
               </div>
-              <div className="mt-4 flex justify-end gap-3">
-                <RegenerateButton
-                  onClick={handleRegenerateScript}
-                  loading={loading}
-                  label="Regenerate Script"
-                />
-                <CopyButton text={script} label="Copy Script" />
+              <div className="mt-6 flex items-center justify-between">
+                <NavBackButton onClick={handleBack} />
+                <div className="flex items-center gap-3">
+                  <RegenerateButton
+                    onClick={handleRegenerateScript}
+                    loading={loading}
+                    label="Regenerate Script"
+                  />
+                  <CopyButton text={script} label="Copy Script" />
+                  <NavNextButton onClick={handleNext} loading={loading} />
+                </div>
               </div>
-              <WizardNavigation
-                currentStep={currentStep}
-                loading={loading}
-                onBack={handleBack}
-                onNext={handleNext}
-              />
             </GlassCard>
           )}
 
@@ -453,20 +507,18 @@ export default function ContentCreatorWizard() {
               <div className="mt-6 rounded-lg border border-white/15 bg-white/5 p-4">
                 <p className="whitespace-pre-wrap text-sm leading-relaxed">{description}</p>
               </div>
-              <div className="mt-4 flex justify-end gap-3">
-                <RegenerateButton
-                  onClick={handleRegenerateDescription}
-                  loading={loading}
-                  label="Regenerate Description"
-                />
-                <CopyButton text={description} label="Copy Description" />
+              <div className="mt-6 flex items-center justify-between">
+                <NavBackButton onClick={handleBack} />
+                <div className="flex items-center gap-3">
+                  <RegenerateButton
+                    onClick={handleRegenerateDescription}
+                    loading={loading}
+                    label="Regenerate Description"
+                  />
+                  <CopyButton text={description} label="Copy Description" />
+                  <NavNextButton onClick={handleNext} loading={loading} label="Review All" />
+                </div>
               </div>
-              <WizardNavigation
-                currentStep={currentStep}
-                loading={loading}
-                onBack={handleBack}
-                onNext={handleNext}
-              />
             </GlassCard>
           )}
 
@@ -506,7 +558,7 @@ export default function ContentCreatorWizard() {
                         <span className="mr-2 font-bold text-white/50">{i + 1}.</span>
                         {headline}
                       </span>
-                      <CopyButton text={headline} />
+                      <CopyButtonSmall text={headline} />
                     </div>
                   ))}
                 </div>
