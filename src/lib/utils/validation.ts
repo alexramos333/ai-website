@@ -263,3 +263,11 @@ export const tiktokShopSchema = z
   );
 
 export type TikTokShopFormData = z.infer<typeof tiktokShopSchema>;
+
+// ─── AI Prompt Generator ───
+export const aiPromptGeneratorSchema = z.object({
+  prompt: z
+    .string()
+    .min(1, "Prompt cannot be empty")
+    .max(3000, "Prompt must be 3,000 characters or less"),
+});
