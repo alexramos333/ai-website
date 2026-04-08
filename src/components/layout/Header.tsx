@@ -26,6 +26,7 @@ const navLinks: NavLink[] = [
       { label: "Content Creation Software", href: "/content-creator" },
       { label: "Google Ads Software", href: "/google-ads" },
       { label: "Facebook Ads Software", href: "/facebook-ads" },
+      { label: "TikTok Shop Software", href: "/tiktok-shop" },
     ],
   },
   { label: "Blog", href: "/blog" },

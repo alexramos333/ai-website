@@ -199,3 +199,67 @@ export const facebookAdsSchema = z
   );
 
 export type FacebookAdsFormData = z.infer<typeof facebookAdsSchema>;
+
+// ─── TikTok Shop Ads Wizard ───
+export type TikTokShopStep = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
+export const tiktokShopSchema = z
+  .object({
+    step: z.number().int().min(2).max(6),
+    productName: z.string().max(200).optional(),
+    productLink: z.string().max(500).optional(),
+    productDescription: z.string().max(2000).optional(),
+    mainProblem: z.string().max(2000).optional(),
+    mainResult: z.string().max(2000).optional(),
+    benefits: z.string().max(2000).optional(),
+    differentiators: z.string().max(2000).optional(),
+    headlines: z.array(z.string()).optional(),
+    description: z.string().optional(),
+    salesAngles: z.array(z.string()).optional(),
+    selectedHook: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      const hasAnyInput = [
+        data.productName,
+        data.productLink,
+        data.productDescription,
+        data.mainProblem,
+        data.mainResult,
+        data.benefits,
+        data.differentiators,
+      ].some((field) => field && field.trim().length > 0);
+      return hasAnyInput;
+    },
+    { message: "At least one product info field is required" },
+  )
+  .refine(
+    (data) => {
+      if (data.step >= 3 && (!data.headlines || data.headlines.length === 0)) return false;
+      return true;
+    },
+    { message: "Headlines are required for this step", path: ["headlines"] },
+  )
+  .refine(
+    (data) => {
+      if (data.step >= 4 && !data.description) return false;
+      return true;
+    },
+    { message: "Description is required for this step", path: ["description"] },
+  )
+  .refine(
+    (data) => {
+      if (data.step >= 5 && (!data.salesAngles || data.salesAngles.length === 0)) return false;
+      return true;
+    },
+    { message: "Sales angles are required for this step", path: ["salesAngles"] },
+  )
+  .refine(
+    (data) => {
+      if (data.step === 6 && !data.selectedHook) return false;
+      return true;
+    },
+    { message: "A selected hook is required for this step", path: ["selectedHook"] },
+  );
+
+export type TikTokShopFormData = z.infer<typeof tiktokShopSchema>;
