@@ -271,3 +271,25 @@ export const aiPromptGeneratorSchema = z.object({
     .min(1, "Prompt cannot be empty")
     .max(3000, "Prompt must be 3,000 characters or less"),
 });
+
+// ─── Email Sequence Generator ───
+const sequenceTypeEnum = z.enum(["welcome", "nurture", "sales", "abandoned_cart", "re_engagement"]);
+
+export const emailGenerateSchema = z.object({
+  sequenceType: sequenceTypeEnum,
+});
+
+export const emailRegenerateSchema = z.object({
+  sequenceType: sequenceTypeEnum,
+  emailNumber: z.number().int().min(1).max(7),
+  emailName: z.string().min(1).max(200),
+  previousBody: z.string().min(1).max(10000),
+});
+
+export const emailRegenerateSubjectsSchema = z.object({
+  sequenceType: sequenceTypeEnum,
+  emailNumber: z.number().int().min(1).max(7),
+  emailName: z.string().min(1).max(200),
+  emailGoal: z.string().min(1).max(500),
+  previousSubjects: z.array(z.string()).min(1).max(3),
+});

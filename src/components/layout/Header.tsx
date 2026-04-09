@@ -28,6 +28,7 @@ const navLinks: NavLink[] = [
       { label: "Facebook Ads Software", href: "/facebook-ads" },
       { label: "TikTok Shop Software", href: "/tiktok-shop" },
       { label: "AI Prompt Generator", href: "/portfolio/ai-prompt-generator" },
+      { label: "AI Email Generator", href: "/portfolio/ai-email-generator" },
     ],
   },
   { label: "Blog", href: "/blog" },
