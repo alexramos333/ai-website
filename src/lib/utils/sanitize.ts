@@ -21,6 +21,9 @@ export function sanitizeHtml(html: string): string {
     allowedAttributes: {
       a: ["href", "title", "target", "rel"],
       img: ["src", "alt", "title"],
+      h2: ["id"],
+      h3: ["id"],
+      h4: ["id"],
       "*": ["class"],
     },
     allowedSchemes: ["http", "https", "mailto"],

@@ -8,11 +8,16 @@ import {
   generateArticleMetadata,
   generateArticleJsonLd,
   calculateReadTime,
+  countWords,
+  extractFaqSchema,
+  stripFaqMarker,
+  extractTableOfContents,
 } from "@/lib/utils/seo";
 import { sanitizeHtml } from "@/lib/utils/sanitize";
 import SectionHeading from "@/components/ui/SectionHeading";
 import ArticleCard from "@/components/ui/ArticleCard";
 import ViewTracker from "@/components/blog/ViewTracker";
+import ReadingProgress from "@/components/blog/ReadingProgress";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
@@ -68,7 +73,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     notFound();
   }
 
-  const readTime = calculateReadTime(article.content);
+  // Extract FAQ schema and clean content
+  const faqSchema = extractFaqSchema(article.content);
+  const cleanContent = stripFaqMarker(article.content);
+
+  const readTime = calculateReadTime(cleanContent);
+  const wordCount = countWords(cleanContent);
+  const toc = extractTableOfContents(cleanContent);
+
   const formattedDate = article.published_at
     ? new Date(article.published_at).toLocaleDateString("en-US", {
         year: "numeric",
@@ -76,6 +88,15 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         day: "numeric",
       })
     : null;
+
+  const lastUpdated = new Date(article.updated_at).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  // Replace <!-- TOC --> marker with empty string (we render ToC separately)
+  const contentHtml = sanitizeHtml(cleanContent.replace(/<!-- TOC -->/g, ""));
 
   // Fetch related articles if the current article has tags
   interface RelatedArticle {
@@ -107,14 +128,27 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   return (
     <>
+      <ReadingProgress />
       <Header />
       <main className="section-padding relative z-30 pt-28">
+        {/* BlogPosting JSON-LD */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(generateArticleJsonLd(article)),
           }}
         />
+
+        {/* FAQPage JSON-LD (if present) */}
+        {faqSchema && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(faqSchema),
+            }}
+          />
+        )}
+
         <ViewTracker slug={slug} />
 
         <article className="mx-auto max-w-3xl">
@@ -137,10 +171,19 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               {formattedDate && <span aria-hidden="true">&middot;</span>}
               <span>{readTime}</span>
               <span aria-hidden="true">&middot;</span>
+              <span>{wordCount.toLocaleString()} words</span>
+              <span aria-hidden="true">&middot;</span>
               <span>
                 {article.view_count} {article.view_count === 1 ? "view" : "views"}
               </span>
             </div>
+
+            {/* Last updated date — GEO freshness signal */}
+            {article.updated_at !== article.created_at && (
+              <p className="mt-2 text-xs text-white/40">
+                Last updated: {lastUpdated}
+              </p>
+            )}
 
             {article.tags.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-2">
@@ -157,9 +200,36 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             )}
           </header>
 
+          {/* Table of Contents (for long articles) */}
+          {toc.length > 3 && (
+            <nav
+              className="glass-card mt-8 p-6"
+              aria-label="Table of contents"
+            >
+              <p className="mb-3 text-sm font-black text-white/75">
+                Table of Contents
+              </p>
+              <ul className="space-y-1.5 text-sm">
+                {toc.map((entry) => (
+                  <li
+                    key={entry.id}
+                    className={entry.level === 3 ? "ml-4" : ""}
+                  >
+                    <a
+                      href={`#${entry.id}`}
+                      className="text-[#67c3ff] transition-colors hover:text-white"
+                    >
+                      {entry.text}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )}
+
           <div
             className="prose-invert mt-10"
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
+            dangerouslySetInnerHTML={{ __html: contentHtml }}
           />
 
           {/* Share */}

@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      article_generations: {
+        Row: {
+          id: string
+          keyword: string
+          status: string
+          article_id: string | null
+          error_message: string | null
+          model_used: string | null
+          tokens_used: number | null
+          generation_time_ms: number | null
+          created_at: string
+          completed_at: string | null
+        }
+        Insert: {
+          id?: string
+          keyword: string
+          status?: string
+          article_id?: string | null
+          error_message?: string | null
+          model_used?: string | null
+          tokens_used?: number | null
+          generation_time_ms?: number | null
+          created_at?: string
+          completed_at?: string | null
+        }
+        Update: {
+          id?: string
+          keyword?: string
+          status?: string
+          article_id?: string | null
+          error_message?: string | null
+          model_used?: string | null
+          tokens_used?: number | null
+          generation_time_ms?: number | null
+          created_at?: string
+          completed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "article_generations_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       articles: {
         Row: {
           author_id: string

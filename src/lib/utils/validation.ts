@@ -293,3 +293,31 @@ export const emailRegenerateSubjectsSchema = z.object({
   emailGoal: z.string().min(1).max(500),
   previousSubjects: z.array(z.string()).min(1).max(3),
 });
+
+// ─── AI Blog Article Generation ───
+
+export const generateArticleSchema = z.object({
+  keyword: z.string().min(2, "Keyword must be at least 2 characters").max(200, "Keyword must be 200 characters or less"),
+  author_id: z.string().uuid("author_id must be a valid UUID").optional(),
+  publish: z.boolean().optional().default(true),
+  tags: z.array(z.string()).optional(),
+});
+
+export type GenerateArticleInput = z.infer<typeof generateArticleSchema>;
+
+/** Schema to validate Claude's JSON response for a generated article. */
+export const generatedArticleResponseSchema = z.object({
+  title: z.string().min(1),
+  meta_title: z.string().min(1),
+  meta_description: z.string().min(1),
+  excerpt: z.string().min(1),
+  slug: z.string().min(1),
+  tags: z.array(z.string()),
+  content: z.string().min(1),
+  faq_data: z.array(
+    z.object({
+      question: z.string().min(1),
+      answer: z.string().min(1),
+    })
+  ),
+});

@@ -9,10 +9,15 @@ const SITE_URL = (
 ).replace(/\/+$/, "");
 
 export function calculateReadTime(content: string): string {
-  const text = content.replace(/<[^>]*>/g, "");
+  const text = content.replace(/<[^>]*>/g, "").replace(/<!--[\s\S]*?-->/g, "");
   const words = text.split(/\s+/).filter(Boolean).length;
   const minutes = Math.max(1, Math.ceil(words / 200));
   return `${minutes} min read`;
+}
+
+export function countWords(content: string): number {
+  const text = content.replace(/<[^>]*>/g, "").replace(/<!--[\s\S]*?-->/g, "");
+  return text.split(/\s+/).filter(Boolean).length;
 }
 
 export function generateArticleMetadata(article: ArticleRow): Metadata {
@@ -31,6 +36,7 @@ export function generateArticleMetadata(article: ArticleRow): Metadata {
       description,
       type: "article",
       publishedTime: article.published_at ?? undefined,
+      modifiedTime: article.updated_at,
       url,
       images,
     },
@@ -51,15 +57,17 @@ export function generateArticleJsonLd(
 ): Record<string, unknown> {
   return {
     "@context": "https://schema.org",
-    "@type": "Article",
+    "@type": "BlogPosting",
     headline: article.title,
     description: article.meta_description || article.excerpt,
     image: article.og_image || undefined,
     datePublished: article.published_at ?? article.created_at,
     dateModified: article.updated_at,
+    wordCount: countWords(article.content),
+    keywords: article.tags.join(", "),
     author: {
-      "@type": "Organization",
-      name: "AI Website",
+      "@type": "Person",
+      name: "Ramos",
     },
     publisher: {
       "@type": "Organization",
@@ -70,4 +78,46 @@ export function generateArticleJsonLd(
       "@id": `${SITE_URL}/blog/${article.slug}`,
     },
   };
+}
+
+/** Extract FAQ schema JSON from the article content HTML comment marker. */
+export function extractFaqSchema(
+  content: string
+): Record<string, unknown> | null {
+  const match = content.match(/<!-- FAQ_SCHEMA:([\s\S]*?) -->/);
+  if (!match?.[1]) return null;
+
+  try {
+    return JSON.parse(match[1]) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+/** Strip the FAQ_SCHEMA HTML comment from content before rendering. */
+export function stripFaqMarker(content: string): string {
+  return content.replace(/\n?<!-- FAQ_SCHEMA:[\s\S]*? -->/, "");
+}
+
+/** Extract headings from HTML content for table of contents. */
+export interface TocEntry {
+  id: string;
+  text: string;
+  level: 2 | 3;
+}
+
+export function extractTableOfContents(content: string): TocEntry[] {
+  const entries: TocEntry[] = [];
+  const regex = /<h([23])\s+id="([^"]+)"[^>]*>(.*?)<\/h[23]>/gi;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(content)) !== null) {
+    const level = parseInt(match[1], 10) as 2 | 3;
+    const id = match[2];
+    // Strip HTML tags from heading text
+    const text = match[3].replace(/<[^>]*>/g, "");
+    entries.push({ id, text, level });
+  }
+
+  return entries;
 }

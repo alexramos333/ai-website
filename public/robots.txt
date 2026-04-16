@@ -3,4 +3,27 @@ Allow: /
 Disallow: /api/
 Disallow: /dashboard/
 Disallow: /profile/
+
+# AI search engine crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
 Sitemap: https://yourdomain.com/sitemap.xml
