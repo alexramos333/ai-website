@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
 
     const anthropic = getAnthropicClient();
     const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-6-20250514",
+      model: "claude-sonnet-4-5-20241022",
       max_tokens: 16000,
       system: [
         {
@@ -244,7 +244,7 @@ export async function POST(request: NextRequest) {
       .update({
         status: "completed",
         article_id: insertedArticle.id,
-        model_used: "claude-sonnet-4-6-20250514",
+        model_used: "claude-sonnet-4-5-20241022",
         tokens_used: tokensUsed,
         generation_time_ms: generationTimeMs,
         completed_at: new Date().toISOString(),
