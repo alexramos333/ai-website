@@ -29,37 +29,48 @@ function verifyToken(token: string, secret: string): boolean {
   return crypto.timingSafeEqual(tokenBuffer, secretBuffer);
 }
 
-/** Call Claude and return the text response. */
+/** Call Claude and return the text response. Aborts after timeoutMs (default 180s). */
 async function callClaude(
   systemPrompt: string,
   userMessage: string,
   maxTokens: number,
+  timeoutMs = 180_000,
 ): Promise<{ text: string; stopReason: string; inputTokens: number; outputTokens: number }> {
   const anthropic = getAnthropicClient();
-  const message = await anthropic.messages.create({
-    model: ARTICLE_MODEL,
-    max_tokens: maxTokens,
-    system: [
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const message = await anthropic.messages.create(
       {
-        type: "text",
-        text: systemPrompt,
-        cache_control: { type: "ephemeral" },
+        model: ARTICLE_MODEL,
+        max_tokens: maxTokens,
+        system: [
+          {
+            type: "text",
+            text: systemPrompt,
+            cache_control: { type: "ephemeral" },
+          },
+        ],
+        messages: [{ role: "user", content: userMessage }],
       },
-    ],
-    messages: [{ role: "user", content: userMessage }],
-  });
+      { signal: controller.signal },
+    );
 
-  const textBlock = message.content.find((block) => block.type === "text");
-  if (!textBlock || textBlock.type !== "text") {
-    throw new Error("No text response from Claude.");
+    const textBlock = message.content.find((block) => block.type === "text");
+    if (!textBlock || textBlock.type !== "text") {
+      throw new Error("No text response from Claude.");
+    }
+
+    return {
+      text: textBlock.text,
+      stopReason: message.stop_reason ?? "unknown",
+      inputTokens: message.usage.input_tokens,
+      outputTokens: message.usage.output_tokens,
+    };
+  } finally {
+    clearTimeout(timer);
   }
-
-  return {
-    text: textBlock.text,
-    stopReason: message.stop_reason ?? "unknown",
-    inputTokens: message.usage.input_tokens,
-    outputTokens: message.usage.output_tokens,
-  };
 }
 
 /** Try to extract valid JSON from Claude's response. Handles markdown fences and truncation. */
@@ -257,7 +268,7 @@ export async function POST(request: NextRequest) {
     const articleResponse = await callClaude(
       BLOG_ARTICLE_SYSTEM_PROMPT,
       BLOG_ARTICLE_USER_PROMPT(keyword, today, researchData),
-      16384,
+      8192,
     );
     totalInputTokens += articleResponse.inputTokens;
     totalOutputTokens += articleResponse.outputTokens;
@@ -278,7 +289,7 @@ export async function POST(request: NextRequest) {
         BLOG_ARTICLE_SYSTEM_PROMPT,
         BLOG_ARTICLE_USER_PROMPT(keyword, today, researchData) +
           "\n\nIMPORTANT: Keep the article under 1500 words to ensure the JSON fits within output limits. A complete shorter article is much better than a truncated one.",
-        16384,
+        8192,
       );
       totalInputTokens += retryResponse.inputTokens;
       totalOutputTokens += retryResponse.outputTokens;

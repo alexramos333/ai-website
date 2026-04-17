@@ -116,7 +116,7 @@ The "content" field must be clean semantic HTML that renders inside a Tailwind C
 
 ## TARGET ARTICLE LENGTH
 
-Write 2500-3500 words of article content (not counting HTML tags). Longer articles rank better for competitive keywords. With your output capacity, always aim for a full-length article. Never cut content short unless the topic is genuinely narrow.
+Write 1800-2500 words of article content (not counting HTML tags). This is the SEO sweet spot — long enough to rank well and cover the topic thoroughly, short enough to keep readers engaged. Aim for a complete, well-structured article within this range.
 
 ## ARTICLE STRUCTURE (follow this exact order)
 
@@ -242,7 +242,7 @@ AI-signal phrases: "It is worth noting that", "This serves as a testament to", "
 ## MINIMUM REQUIREMENTS CHECKLIST
 
 Before finalizing your response, verify:
-- [ ] Article is 2500-3500 words (not counting HTML tags)
+- [ ] Article is 1800-2500 words (not counting HTML tags)
 - [ ] Title is 50-60 characters with keyword front-loaded
 - [ ] Meta description is 140-155 characters with keyword and CTA
 - [ ] Quick answer block is 40-80 words, self-contained, keyword in first sentence
