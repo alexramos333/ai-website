@@ -331,19 +331,8 @@ export async function POST(request: NextRequest) {
 
     const contentWithFaqMarker = `${content}\n<!-- FAQ_SCHEMA:${faqSchemaJson} -->`;
 
-    // ── Phase 3: Generate hero image ──
-    console.log(`[ARTICLE GEN] Phase 3: Generating hero image for "${keyword}"...`);
-    const imagePrompt = article.image_prompt
-      ? `Professional blog header image for an article about ${keyword}: ${article.image_prompt}`
-      : `Professional blog header image: a photorealistic, visually striking scene representing the concept of ${keyword}. Clean composition, modern aesthetic, warm lighting. No text, words, letters, logos, or watermarks.`;
-    const ogImageUrl = await generateBlogImage(imagePrompt, slug);
-    if (ogImageUrl) {
-      console.log(`[ARTICLE GEN] Phase 3 complete. Image: ${ogImageUrl}`);
-    } else {
-      console.warn(`[ARTICLE GEN] Phase 3: Image generation skipped or failed. Continuing without image.`);
-    }
-
-    // Insert the article into Supabase
+    // ── Save the article FIRST (before image generation) ──
+    // This ensures the article is published even if image gen fails or times out.
     const { data: insertedArticle, error: insertError } = await supabase
       .from("articles")
       .insert({
@@ -353,7 +342,6 @@ export async function POST(request: NextRequest) {
         excerpt,
         meta_title: metaTitle,
         meta_description: metaDescription,
-        og_image: ogImageUrl,
         published: publish,
         published_at: publish ? new Date().toISOString() : null,
         tags: allTags,
@@ -369,6 +357,47 @@ export async function POST(request: NextRequest) {
         throw new Error(`Article with slug "${slug}" already exists in the database.`);
       }
       throw new Error(`Database insert failed: ${insertError.message}`);
+    }
+
+    console.log(`[ARTICLE GEN] Article saved: slug="${insertedArticle.slug}"`);
+
+    // ── Phase 3: Generate hero image (with timeout) ──
+    // Runs AFTER article is saved. If it fails or times out, article stays published without image.
+    const timeElapsed = Date.now() - startTime;
+    const timeRemaining = 110_000 - timeElapsed; // Leave 10s buffer before 120s limit
+    let ogImageUrl = "";
+
+    if (timeRemaining > 15_000) {
+      // Only attempt image generation if we have at least 15s remaining
+      console.log(`[ARTICLE GEN] Phase 3: Generating hero image (${Math.round(timeRemaining / 1000)}s budget)...`);
+      const imagePrompt = article.image_prompt
+        ? `Professional blog header image for an article about ${keyword}: ${article.image_prompt}`
+        : `Professional blog header image: a photorealistic, visually striking scene representing the concept of ${keyword}. Clean composition, modern aesthetic, warm lighting. No text, words, letters, logos, or watermarks.`;
+
+      // Race image generation against a timeout
+      const imageTimeout = Math.min(timeRemaining - 5_000, 30_000); // Max 30s, leave 5s for cleanup
+      ogImageUrl = await Promise.race([
+        generateBlogImage(imagePrompt, slug),
+        new Promise<string>((resolve) =>
+          setTimeout(() => {
+            console.warn(`[IMAGE GEN] Timed out after ${imageTimeout}ms.`);
+            resolve("");
+          }, imageTimeout),
+        ),
+      ]);
+
+      if (ogImageUrl) {
+        // Update the article with the image URL
+        await supabase
+          .from("articles")
+          .update({ og_image: ogImageUrl })
+          .eq("id", insertedArticle.id);
+        console.log(`[ARTICLE GEN] Phase 3 complete. Image: ${ogImageUrl}`);
+      } else {
+        console.warn(`[ARTICLE GEN] Phase 3: Image generation skipped or failed. Article published without image.`);
+      }
+    } else {
+      console.warn(`[ARTICLE GEN] Phase 3: Skipped — only ${Math.round(timeRemaining / 1000)}s remaining.`);
     }
 
     const generationTimeMs = Date.now() - startTime;
