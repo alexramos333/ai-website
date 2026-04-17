@@ -13,9 +13,13 @@ import {
 } from "@/lib/utils/api";
 import { sanitizeText } from "@/lib/utils/sanitize";
 import {
+  KEYWORD_RESEARCH_SYSTEM_PROMPT,
+  KEYWORD_RESEARCH_USER_PROMPT,
   BLOG_ARTICLE_SYSTEM_PROMPT,
   BLOG_ARTICLE_USER_PROMPT,
 } from "@/lib/prompts/blog-article";
+
+const ARTICLE_MODEL = process.env.ARTICLE_GEN_MODEL || "claude-sonnet-4-5-20250929";
 
 function verifyToken(token: string, secret: string): boolean {
   const tokenBuffer = Buffer.from(token);
@@ -24,12 +28,107 @@ function verifyToken(token: string, secret: string): boolean {
   return crypto.timingSafeEqual(tokenBuffer, secretBuffer);
 }
 
+/** Call Claude and return the text response. */
+async function callClaude(
+  systemPrompt: string,
+  userMessage: string,
+  maxTokens: number,
+): Promise<{ text: string; stopReason: string; inputTokens: number; outputTokens: number }> {
+  const anthropic = getAnthropicClient();
+  const message = await anthropic.messages.create({
+    model: ARTICLE_MODEL,
+    max_tokens: maxTokens,
+    system: [
+      {
+        type: "text",
+        text: systemPrompt,
+        cache_control: { type: "ephemeral" },
+      },
+    ],
+    messages: [{ role: "user", content: userMessage }],
+  });
+
+  const textBlock = message.content.find((block) => block.type === "text");
+  if (!textBlock || textBlock.type !== "text") {
+    throw new Error("No text response from Claude.");
+  }
+
+  return {
+    text: textBlock.text,
+    stopReason: message.stop_reason ?? "unknown",
+    inputTokens: message.usage.input_tokens,
+    outputTokens: message.usage.output_tokens,
+  };
+}
+
+/** Try to extract valid JSON from Claude's response. Handles markdown fences and truncation. */
+function extractJson(rawText: string, stopReason: string): unknown {
+  let text = rawText.trim();
+
+  // Strip markdown fences
+  if (text.startsWith("```")) {
+    text = text.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "");
+  }
+
+  // First try: parse as-is
+  try {
+    return JSON.parse(text);
+  } catch {
+    // If truncated at max_tokens, try to repair the JSON
+    if (stopReason === "max_tokens") {
+      console.warn("[ARTICLE GEN] Response truncated at max_tokens, attempting JSON repair...");
+      return repairTruncatedJson(text);
+    }
+    throw new Error("Claude returned invalid JSON.");
+  }
+}
+
+/** Attempt to repair truncated JSON by closing open structures. */
+function repairTruncatedJson(text: string): unknown {
+  let repaired = text.trim();
+
+  // If we're inside a string value, close it
+  const quoteCount = (repaired.match(/(?<!\\)"/g) || []).length;
+  if (quoteCount % 2 !== 0) {
+    repaired += '"';
+  }
+
+  // Close any open arrays and objects by counting brackets
+  const opens = { "{": 0, "[": 0 };
+  let inString = false;
+  for (let i = 0; i < repaired.length; i++) {
+    const ch = repaired[i];
+    if (ch === '"' && (i === 0 || repaired[i - 1] !== "\\")) {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+    if (ch === "{") opens["{"]++;
+    if (ch === "}") opens["{"]--;
+    if (ch === "[") opens["["]++;
+    if (ch === "]") opens["["]--;
+  }
+
+  // Remove any trailing comma before closing
+  repaired = repaired.replace(/,\s*$/, "");
+
+  // Close open brackets
+  for (let i = 0; i < opens["["]; i++) repaired += "]";
+  for (let i = 0; i < opens["{"]; i++) repaired += "}";
+
+  try {
+    return JSON.parse(repaired);
+  } catch {
+    throw new Error("Claude returned truncated JSON that could not be repaired.");
+  }
+}
+
 export const maxDuration = 120; // Allow up to 120s on Vercel Pro
 
 export async function POST(request: NextRequest) {
-  // Rate limit: 2 per minute to prevent accidental rapid-fire
+  // Rate limit: 5 per 10 minutes
   const rateLimitKey = `gen-article:${getRateLimitKey(request)}`;
-  const { allowed } = checkRateLimit(rateLimitKey, 2, 60_000);
+  const { allowed } = checkRateLimit(rateLimitKey, 5, 600_000);
   if (!allowed) {
     return createErrorResponse("Too many requests. Please wait before generating another article.", 429);
   }
@@ -113,49 +212,82 @@ export async function POST(request: NextRequest) {
     .update({ status: "in_progress" })
     .eq("id", job.id);
 
+  let totalInputTokens = 0;
+  let totalOutputTokens = 0;
+
   try {
-    // Generate the article with Claude
     const today = new Date().toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
     });
 
-    const anthropic = getAnthropicClient();
-    const message = await anthropic.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 8192,
-      system: [
-        {
-          type: "text",
-          text: BLOG_ARTICLE_SYSTEM_PROMPT,
-          cache_control: { type: "ephemeral" },
-        },
-      ],
-      messages: [
-        { role: "user", content: BLOG_ARTICLE_USER_PROMPT(keyword, today) },
-      ],
-    });
+    // ── Phase 1: Research the keyword ──
+    console.log(`[ARTICLE GEN] Phase 1: Researching keyword "${keyword}"...`);
 
-    const textBlock = message.content.find((block) => block.type === "text");
-    if (!textBlock || textBlock.type !== "text") {
-      throw new Error("No text response from Claude.");
+    const researchResponse = await callClaude(
+      KEYWORD_RESEARCH_SYSTEM_PROMPT,
+      KEYWORD_RESEARCH_USER_PROMPT(keyword),
+      4096,
+    );
+    totalInputTokens += researchResponse.inputTokens;
+    totalOutputTokens += researchResponse.outputTokens;
+
+    let researchData: string;
+    try {
+      // Validate it's valid JSON, then pass as string to phase 2
+      extractJson(researchResponse.text, researchResponse.stopReason);
+      researchData = researchResponse.text.trim();
+      // Strip markdown fences for clean embedding
+      if (researchData.startsWith("```")) {
+        researchData = researchData.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "");
+      }
+    } catch {
+      // If research JSON is invalid, use the raw text as context anyway
+      console.warn("[ARTICLE GEN] Research phase returned non-JSON, using as raw context.");
+      researchData = researchResponse.text.trim();
     }
 
-    // Parse and validate the JSON response
-    let rawJson: string = textBlock.text.trim();
+    console.log(`[ARTICLE GEN] Phase 1 complete. Research: ${researchResponse.outputTokens} tokens.`);
 
-    // Strip markdown fences if Claude wrapped the response
-    if (rawJson.startsWith("```")) {
-      rawJson = rawJson.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "");
+    // ── Phase 2: Generate the article using research data ──
+    console.log(`[ARTICLE GEN] Phase 2: Generating article for "${keyword}"...`);
+
+    const articleResponse = await callClaude(
+      BLOG_ARTICLE_SYSTEM_PROMPT,
+      BLOG_ARTICLE_USER_PROMPT(keyword, today, researchData),
+      16384,
+    );
+    totalInputTokens += articleResponse.inputTokens;
+    totalOutputTokens += articleResponse.outputTokens;
+
+    if (articleResponse.stopReason === "max_tokens") {
+      console.warn(`[ARTICLE GEN] Article response was truncated (max_tokens). Attempting repair...`);
     }
 
+    // Parse and validate the article JSON (with truncation repair if needed)
     let parsed: unknown;
     try {
-      parsed = JSON.parse(rawJson);
-    } catch {
-      console.error("Failed to parse Claude response as JSON. Raw:", rawJson.slice(0, 500));
-      throw new Error("Claude returned invalid JSON.");
+      parsed = extractJson(articleResponse.text, articleResponse.stopReason);
+    } catch (parseError) {
+      // Retry once: ask Claude to produce a shorter article
+      console.warn(`[ARTICLE GEN] First attempt failed JSON parse. Retrying with shorter target...`);
+
+      const retryResponse = await callClaude(
+        BLOG_ARTICLE_SYSTEM_PROMPT,
+        BLOG_ARTICLE_USER_PROMPT(keyword, today, researchData) +
+          "\n\nIMPORTANT: Keep the article under 1500 words to ensure the JSON fits within output limits. A complete shorter article is much better than a truncated one.",
+        16384,
+      );
+      totalInputTokens += retryResponse.inputTokens;
+      totalOutputTokens += retryResponse.outputTokens;
+
+      try {
+        parsed = extractJson(retryResponse.text, retryResponse.stopReason);
+      } catch {
+        const firstErr = parseError instanceof Error ? parseError.message : "Unknown";
+        throw new Error(`JSON parse failed after retry. First attempt: ${firstErr}`);
+      }
     }
 
     const articleResult = generatedArticleResponseSchema.safeParse(parsed);
@@ -219,7 +351,6 @@ export async function POST(request: NextRequest) {
     if (insertError) {
       console.error("Article insert error:", insertError.message);
 
-      // Handle duplicate slug
       if (insertError.message.includes("duplicate") || insertError.message.includes("unique")) {
         throw new Error(`Article with slug "${slug}" already exists in the database.`);
       }
@@ -227,14 +358,14 @@ export async function POST(request: NextRequest) {
     }
 
     const generationTimeMs = Date.now() - startTime;
-    const tokensUsed = message.usage.input_tokens + message.usage.output_tokens;
+    const tokensUsed = totalInputTokens + totalOutputTokens;
 
-    // Log cost
-    const inputCost = message.usage.input_tokens * 0.000003;
-    const outputCost = message.usage.output_tokens * 0.000015;
+    // Log cost (Sonnet 4.5 pricing: $3/M input, $15/M output)
+    const inputCost = totalInputTokens * 0.000003;
+    const outputCost = totalOutputTokens * 0.000015;
     console.log(
       `[ARTICLE GEN] keyword="${keyword}" | slug="${insertedArticle.slug}" | ` +
-      `tokens=${tokensUsed} | cost=$${(inputCost + outputCost).toFixed(4)} | ` +
+      `model=${ARTICLE_MODEL} | tokens=${tokensUsed} | cost=$${(inputCost + outputCost).toFixed(4)} | ` +
       `time=${generationTimeMs}ms`,
     );
 
@@ -244,7 +375,7 @@ export async function POST(request: NextRequest) {
       .update({
         status: "completed",
         article_id: insertedArticle.id,
-        model_used: "claude-haiku-4-5-20251001",
+        model_used: ARTICLE_MODEL,
         tokens_used: tokensUsed,
         generation_time_ms: generationTimeMs,
         completed_at: new Date().toISOString(),
@@ -263,6 +394,7 @@ export async function POST(request: NextRequest) {
         },
         generation: {
           keyword,
+          model: ARTICLE_MODEL,
           tokens_used: tokensUsed,
           generation_time_ms: generationTimeMs,
         },

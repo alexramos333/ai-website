@@ -25,30 +25,35 @@
  * A: Keyword | B: Status | C: Article URL | D: Generated At | E: Error
  *
  * HOW IT WORKS:
- * Every 5 minutes the script checks for rows where column A has a keyword
- * but column B is empty. For each one, it calls your API to generate and
- * publish the article, then fills in columns B-E with the result.
+ * Every 5 minutes the script checks for the FIRST row where column A has a
+ * keyword but column B is empty. It processes only ONE keyword per trigger
+ * to prevent timeouts and ensure reliable sequential generation.
+ * The next keyword is picked up on the next 5-minute trigger cycle.
  */
 
 /**
  * Main function — called by the time-driven trigger.
- * Scans for unprocessed keywords and generates articles for each.
+ * Finds the FIRST unprocessed keyword and generates an article for it.
+ * Only processes ONE keyword per execution for reliability.
  */
 function processNewKeywords() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var data = sheet.getDataRange().getValues();
 
-  // Skip header row (row 1)
+  // Find the first unprocessed keyword (skip header row)
   for (var i = 1; i < data.length; i++) {
     var keyword = data[i][0]; // Column A: Keyword
     var status = data[i][1];  // Column B: Status
 
-    // Only process rows that have a keyword but no status
+    // Process the first row that has a keyword but no status
     if (keyword && !status) {
       var rowNumber = i + 1; // Sheets are 1-indexed
       generateArticle(sheet, rowNumber, keyword.toString().trim());
+      return; // Stop after processing ONE keyword
     }
   }
+
+  // No unprocessed keywords found — nothing to do
 }
 
 /**
@@ -84,8 +89,6 @@ function generateArticle(sheet, rowNumber, keyword) {
       },
       payload: JSON.stringify(payload),
       muteHttpExceptions: true,
-      // 2-minute timeout (Google Apps Script max is 6 minutes)
-      timeout: 120,
     };
 
     var response = UrlFetchApp.fetch(apiUrl, options);
@@ -103,15 +106,18 @@ function generateArticle(sheet, rowNumber, keyword) {
       sheet.getRange(rowNumber, 2).setValue("Duplicate");
       sheet.getRange(rowNumber, 5).setValue(responseBody.error || "Article already exists");
     } else {
-      // Other error
-      sheet.getRange(rowNumber, 2).setValue("Failed");
+      // Other error — mark as Retry so the next trigger picks it up again
+      sheet.getRange(rowNumber, 2).setValue("");
       sheet.getRange(rowNumber, 5).setValue(
-        responseBody.error || "HTTP " + responseCode
+        "Attempt failed: " + (responseBody.error || "HTTP " + responseCode) + " — will retry"
       );
     }
   } catch (error) {
-    sheet.getRange(rowNumber, 2).setValue("Failed");
-    sheet.getRange(rowNumber, 5).setValue(error.toString().substring(0, 500));
+    // Network/timeout error — clear status so it retries on the next trigger
+    sheet.getRange(rowNumber, 2).setValue("");
+    sheet.getRange(rowNumber, 5).setValue(
+      "Attempt failed: " + error.toString().substring(0, 400) + " — will retry"
+    );
   }
 }
 
@@ -122,7 +128,7 @@ function generateArticle(sheet, rowNumber, keyword) {
 function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu("Blog Generator")
-    .addItem("Process New Keywords", "processNewKeywords")
+    .addItem("Generate Next Article", "processNewKeywords")
     .addToUi();
 }
 
