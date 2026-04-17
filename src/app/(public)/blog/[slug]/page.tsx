@@ -1,5 +1,6 @@
 import { cache } from "react";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -106,6 +107,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     excerpt: string;
     tags: string[];
     published_at: string | null;
+    og_image: string;
   }
 
   let relatedArticles: RelatedArticle[] = [];
@@ -113,7 +115,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     const supabase = await createClient();
     const { data } = await supabase
       .from("articles")
-      .select("id, title, slug, excerpt, tags, published_at")
+      .select("id, title, slug, excerpt, tags, published_at, og_image")
       .eq("published", true)
       .overlaps("tags", article.tags)
       .neq("id", article.id)
@@ -199,6 +201,20 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               </div>
             )}
           </header>
+
+          {/* Hero image */}
+          {article.og_image && (
+            <figure className="mt-8 -mx-4 sm:mx-0 overflow-hidden rounded-lg">
+              <Image
+                src={article.og_image}
+                alt={article.title}
+                width={1200}
+                height={630}
+                priority
+                className="w-full h-auto"
+              />
+            </figure>
+          )}
 
           {/* Table of Contents (for long articles) */}
           {toc.length > 3 && (

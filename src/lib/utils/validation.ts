@@ -320,4 +320,5 @@ export const generatedArticleResponseSchema = z.object({
       answer: z.string().min(1),
     })
   ),
+  image_prompt: z.string().min(1).optional(),
 });

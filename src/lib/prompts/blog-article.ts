@@ -95,7 +95,8 @@ You MUST respond with a single valid JSON object. No markdown fences, no extra t
   "faq_data": [
     {"question": "Question text?", "answer": "2-4 sentence answer (40-60 words)"},
     ...5-7 FAQ items
-  ]
+  ],
+  "image_prompt": "A detailed description for an AI image generator to create a professional blog hero image. Describe a photorealistic scene that visually represents the article topic. Be specific about composition, lighting, colors, and subjects. Do NOT include any text, words, letters, logos, or watermarks in the image. 2-3 sentences, max 200 words."
 }
 
 CRITICAL: Your entire response must be valid JSON. Do not truncate. If you're running low on space, wrap up the article with a shorter conclusion and FAQ section rather than producing invalid JSON. A complete shorter article is always better than a truncated longer one.
@@ -257,6 +258,7 @@ Before finalizing your response, verify:
 - [ ] Conclusion has a clear CTA
 - [ ] Zero blacklisted words/phrases remain
 - [ ] All H2/H3 tags have id attributes
+- [ ] image_prompt describes a photorealistic scene related to the topic (no text/words/logos in the image)
 - [ ] The JSON is complete and valid — not truncated`;
 
 export const BLOG_ARTICLE_USER_PROMPT = (keyword: string, today: string, researchData: string): string =>

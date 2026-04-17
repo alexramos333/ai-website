@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 const paddingMap = {
+  none: "",
   sm: "p-3 sm:p-4",
   md: "p-4 sm:p-6",
   lg: "p-4 sm:p-6 md:p-8",
@@ -9,7 +10,7 @@ const paddingMap = {
 interface GlassCardProps {
   children: ReactNode;
   className?: string;
-  padding?: "sm" | "md" | "lg";
+  padding?: "none" | "sm" | "md" | "lg";
 }
 
 export default function GlassCard({

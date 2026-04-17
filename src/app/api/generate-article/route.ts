@@ -12,6 +12,7 @@ import {
   slugify,
 } from "@/lib/utils/api";
 import { sanitizeText } from "@/lib/utils/sanitize";
+import { generateBlogImage } from "@/lib/image-gen";
 import {
   KEYWORD_RESEARCH_SYSTEM_PROMPT,
   KEYWORD_RESEARCH_USER_PROMPT,
@@ -330,6 +331,18 @@ export async function POST(request: NextRequest) {
 
     const contentWithFaqMarker = `${content}\n<!-- FAQ_SCHEMA:${faqSchemaJson} -->`;
 
+    // ── Phase 3: Generate hero image ──
+    console.log(`[ARTICLE GEN] Phase 3: Generating hero image for "${keyword}"...`);
+    const imagePrompt = article.image_prompt
+      ? `Professional blog header image for an article about ${keyword}: ${article.image_prompt}`
+      : `Professional blog header image: a photorealistic, visually striking scene representing the concept of ${keyword}. Clean composition, modern aesthetic, warm lighting. No text, words, letters, logos, or watermarks.`;
+    const ogImageUrl = await generateBlogImage(imagePrompt, slug);
+    if (ogImageUrl) {
+      console.log(`[ARTICLE GEN] Phase 3 complete. Image: ${ogImageUrl}`);
+    } else {
+      console.warn(`[ARTICLE GEN] Phase 3: Image generation skipped or failed. Continuing without image.`);
+    }
+
     // Insert the article into Supabase
     const { data: insertedArticle, error: insertError } = await supabase
       .from("articles")
@@ -340,6 +353,7 @@ export async function POST(request: NextRequest) {
         excerpt,
         meta_title: metaTitle,
         meta_description: metaDescription,
+        og_image: ogImageUrl,
         published: publish,
         published_at: publish ? new Date().toISOString() : null,
         tags: allTags,
@@ -391,6 +405,7 @@ export async function POST(request: NextRequest) {
           id: insertedArticle.id,
           slug: insertedArticle.slug,
           url: `${siteUrl}/blog/${insertedArticle.slug}`,
+          image: ogImageUrl || null,
         },
         generation: {
           keyword,

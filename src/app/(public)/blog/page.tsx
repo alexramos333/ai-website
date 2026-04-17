@@ -35,7 +35,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 
   let query = supabase
     .from("articles")
-    .select("id, title, slug, excerpt, tags, published_at", {
+    .select("id, title, slug, excerpt, tags, published_at, og_image", {
       count: "exact",
     })
     .eq("published", true)
