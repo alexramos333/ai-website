@@ -1,5 +1,5 @@
 /**
- * Google Apps Script — AI Blog Article Generator Trigger
+ * Google Apps Script — AI Blog Article Generator (Multi-Step Pipeline)
  *
  * SETUP INSTRUCTIONS:
  * 1. Open your Google Sheet
@@ -7,7 +7,7 @@
  * 3. Delete all default code and paste this entire file
  * 4. Click the gear icon (Project Settings) in the left sidebar
  * 5. Scroll to "Script Properties" and click "Add script property"
- * 6. Add these two properties:
+ * 6. Add these properties:
  *    - Property: API_URL        Value: https://yourdomain.com/api/generate-article
  *    - Property: WEBHOOK_SECRET  Value: (your AI_WEBHOOK_SECRET from .env.local)
  *    - Property: AUTHOR_ID       Value: (your Supabase admin user UUID — optional)
@@ -27,14 +27,16 @@
  * HOW IT WORKS:
  * Every 5 minutes the script checks for the FIRST row where column A has a
  * keyword but column B is empty. It processes only ONE keyword per trigger
- * to prevent timeouts and ensure reliable sequential generation.
- * The next keyword is picked up on the next 5-minute trigger cycle.
+ * using a 3-step pipeline:
+ *   Step 1: POST /research — Claude researches the keyword (~15-30s)
+ *   Step 2: POST /write    — Claude writes the article and saves to DB (~90-180s)
+ *   Step 3: POST /image    — Generates a hero image via AI (~20-40s)
+ * Each step is a separate API call with its own timeout budget.
  */
 
 /**
  * Main function — called by the time-driven trigger.
  * Finds the FIRST unprocessed keyword and generates an article for it.
- * Only processes ONE keyword per execution for reliability.
  */
 function processNewKeywords() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
@@ -45,53 +47,104 @@ function processNewKeywords() {
     var keyword = data[i][0]; // Column A: Keyword
     var status = data[i][1];  // Column B: Status
 
-    // Process the first row that has a keyword but no status
     if (keyword && !status) {
       var rowNumber = i + 1; // Sheets are 1-indexed
       generateArticle(sheet, rowNumber, keyword.toString().trim());
       return; // Stop after processing ONE keyword
     }
   }
-
-  // No unprocessed keywords found — nothing to do
 }
 
 /**
- * Generate a single article for a keyword and update the sheet row.
+ * Generate a single article using the 3-step pipeline.
  */
 function generateArticle(sheet, rowNumber, keyword) {
   var props = PropertiesService.getScriptProperties();
-  var apiUrl = props.getProperty("API_URL");
+  var baseUrl = (props.getProperty("API_URL") || "").replace(/\/+$/, "");
   var secret = props.getProperty("WEBHOOK_SECRET");
   var authorId = props.getProperty("AUTHOR_ID");
 
-  if (!apiUrl || !secret) {
+  if (!baseUrl || !secret) {
     sheet.getRange(rowNumber, 2).setValue("ERROR: Missing script properties");
     sheet.getRange(rowNumber, 5).setValue("Set API_URL and WEBHOOK_SECRET in Script Properties");
     return;
   }
 
-  // Mark as generating
-  sheet.getRange(rowNumber, 2).setValue("Generating...");
-  SpreadsheetApp.flush(); // Force UI update
+  // ── Step 1: Research ──
+  sheet.getRange(rowNumber, 2).setValue("Researching...");
+  sheet.getRange(rowNumber, 5).setValue("");
+  SpreadsheetApp.flush();
 
+  var researchPayload = { keyword: keyword };
+  if (authorId) researchPayload.author_id = authorId;
+
+  var researchResult = callApi(baseUrl + "/research", researchPayload, secret);
+
+  if (!researchResult.success) {
+    handleStepError(sheet, rowNumber, "Research", researchResult);
+    return;
+  }
+
+  var jobId = researchResult.data.job_id;
+  var researchData = researchResult.data.research_data;
+
+  // ── Step 2: Write ──
+  sheet.getRange(rowNumber, 2).setValue("Writing...");
+  SpreadsheetApp.flush();
+
+  var writePayload = {
+    job_id: jobId,
+    research_data: researchData,
+  };
+  if (authorId) writePayload.author_id = authorId;
+
+  var writeResult = callApi(baseUrl + "/write", writePayload, secret);
+
+  if (!writeResult.success) {
+    handleStepError(sheet, rowNumber, "Write", writeResult);
+    return;
+  }
+
+  var articleUrl = writeResult.data.article ? writeResult.data.article.url : "";
+  var imagePrompt = writeResult.data.image_prompt || "";
+
+  // ── Step 3: Image ──
+  sheet.getRange(rowNumber, 2).setValue("Generating image...");
+  SpreadsheetApp.flush();
+
+  var imagePayload = { job_id: jobId };
+  if (imagePrompt) imagePayload.image_prompt = imagePrompt;
+
+  var imageResult = callApi(baseUrl + "/image", imagePayload, secret);
+
+  // Image failure is non-fatal — article is already published
+  var imageNote = "";
+  if (!imageResult.success || !imageResult.data || !imageResult.data.image_url) {
+    imageNote = "Published without image";
+  }
+
+  // ── Done ──
+  sheet.getRange(rowNumber, 2).setValue("Published");
+  sheet.getRange(rowNumber, 3).setValue(articleUrl);
+  sheet.getRange(rowNumber, 4).setValue(new Date().toLocaleString());
+  sheet.getRange(rowNumber, 5).setValue(imageNote);
+}
+
+/**
+ * Make a POST request to an API endpoint.
+ * Returns { success: boolean, data?: object, httpCode?: number, error?: string, isDuplicate?: boolean }
+ */
+function callApi(url, payload, secret) {
   try {
-    var payload = { keyword: keyword };
-    if (authorId) {
-      payload.author_id = authorId;
-    }
-
     var options = {
       method: "post",
       contentType: "application/json",
-      headers: {
-        Authorization: "Bearer " + secret,
-      },
+      headers: { Authorization: "Bearer " + secret },
       payload: JSON.stringify(payload),
       muteHttpExceptions: true,
     };
 
-    var response = UrlFetchApp.fetch(apiUrl, options);
+    var response = UrlFetchApp.fetch(url, options);
     var responseCode = response.getResponseCode();
     var responseText = response.getContentText();
 
@@ -100,42 +153,50 @@ function generateArticle(sheet, rowNumber, keyword) {
     try {
       responseBody = JSON.parse(responseText);
     } catch (parseErr) {
-      sheet.getRange(rowNumber, 2).setValue("");
-      sheet.getRange(rowNumber, 5).setValue(
-        "HTTP " + responseCode + ": " + responseText.substring(0, 300) + " — will retry"
-      );
-      return;
+      return {
+        success: false,
+        httpCode: responseCode,
+        error: "HTTP " + responseCode + ": " + responseText.substring(0, 300),
+      };
     }
 
-    if (responseCode === 201 && responseBody.success) {
-      // Success
-      sheet.getRange(rowNumber, 2).setValue("Published");
-      sheet.getRange(rowNumber, 3).setValue(responseBody.article.url);
-      sheet.getRange(rowNumber, 4).setValue(new Date().toLocaleString());
-      sheet.getRange(rowNumber, 5).setValue(""); // Clear any previous error
-    } else if (responseCode === 409) {
-      // Duplicate keyword
-      sheet.getRange(rowNumber, 2).setValue("Duplicate");
-      sheet.getRange(rowNumber, 5).setValue(responseBody.error || "Article already exists");
+    if (responseCode >= 200 && responseCode < 300 && responseBody.success !== false) {
+      return { success: true, data: responseBody };
     } else {
-      // Other error — mark as Retry so the next trigger picks it up again
-      sheet.getRange(rowNumber, 2).setValue("");
-      sheet.getRange(rowNumber, 5).setValue(
-        "Attempt failed: " + (responseBody.error || "HTTP " + responseCode) + " — will retry"
-      );
+      return {
+        success: false,
+        httpCode: responseCode,
+        error: responseBody.error || "HTTP " + responseCode,
+        isDuplicate: responseCode === 409,
+      };
     }
   } catch (error) {
-    // Network/timeout error — clear status so it retries on the next trigger
+    return {
+      success: false,
+      httpCode: 0,
+      error: error.toString().substring(0, 400),
+    };
+  }
+}
+
+/**
+ * Handle a step failure — mark as Duplicate or clear status for retry.
+ */
+function handleStepError(sheet, rowNumber, stepName, result) {
+  if (result.isDuplicate) {
+    sheet.getRange(rowNumber, 2).setValue("Duplicate");
+    sheet.getRange(rowNumber, 5).setValue(result.error || "Article already exists");
+  } else {
+    // Clear status so next trigger retries from Step 1
     sheet.getRange(rowNumber, 2).setValue("");
     sheet.getRange(rowNumber, 5).setValue(
-      "Attempt failed: " + error.toString().substring(0, 400) + " — will retry"
+      stepName + " failed: " + (result.error || "Unknown error") + " — will retry"
     );
   }
 }
 
 /**
  * Optional: Add a custom menu to manually trigger generation.
- * This adds a "Blog Generator" menu item to your Google Sheet.
  */
 function onOpen() {
   SpreadsheetApp.getUi()
@@ -145,15 +206,14 @@ function onOpen() {
 }
 
 /**
- * Optional: Test function — run this manually to verify the setup works.
- * Go to Apps Script editor, select "testConnection" from the dropdown, click Run.
+ * Optional: Test function — verify the setup works.
  */
 function testConnection() {
   var props = PropertiesService.getScriptProperties();
-  var apiUrl = props.getProperty("API_URL");
+  var baseUrl = props.getProperty("API_URL");
   var secret = props.getProperty("WEBHOOK_SECRET");
 
-  if (!apiUrl) {
+  if (!baseUrl) {
     Logger.log("ERROR: API_URL not set in Script Properties");
     return;
   }
@@ -162,7 +222,10 @@ function testConnection() {
     return;
   }
 
-  Logger.log("API_URL: " + apiUrl);
+  Logger.log("API_URL: " + baseUrl);
   Logger.log("WEBHOOK_SECRET: " + (secret ? "Set (" + secret.length + " chars)" : "NOT SET"));
-  Logger.log("Setup looks good! Try adding a keyword to your sheet.");
+  Logger.log("Setup looks good! The script calls 3 endpoints:");
+  Logger.log("  " + baseUrl + "/research");
+  Logger.log("  " + baseUrl + "/write");
+  Logger.log("  " + baseUrl + "/image");
 }

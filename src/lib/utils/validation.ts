@@ -305,6 +305,21 @@ export const generateArticleSchema = z.object({
 
 export type GenerateArticleInput = z.infer<typeof generateArticleSchema>;
 
+/** Schema for Step 2 (write) — receives job_id + research data from Step 1. */
+export const writeArticleSchema = z.object({
+  job_id: z.string().uuid("job_id must be a valid UUID"),
+  research_data: z.string().min(1, "research_data is required"),
+  author_id: z.string().uuid("author_id must be a valid UUID").optional(),
+  publish: z.boolean().optional().default(true),
+  tags: z.array(z.string()).optional(),
+});
+
+/** Schema for Step 3 (image) — receives job_id + optional image prompt from Step 2. */
+export const imageStepSchema = z.object({
+  job_id: z.string().uuid("job_id must be a valid UUID"),
+  image_prompt: z.string().optional(),
+});
+
 /** Schema to validate Claude's JSON response for a generated article. */
 export const generatedArticleResponseSchema = z.object({
   title: z.string().min(1),
@@ -313,12 +328,12 @@ export const generatedArticleResponseSchema = z.object({
   excerpt: z.string().min(1),
   slug: z.string().min(1),
   tags: z.array(z.string()),
-  content: z.string().min(1),
   faq_data: z.array(
     z.object({
       question: z.string().min(1),
       answer: z.string().min(1),
     })
-  ),
+  ).default([]),
   image_prompt: z.string().min(1).optional(),
+  content: z.string().min(1),
 });
