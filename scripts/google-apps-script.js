@@ -93,7 +93,19 @@ function generateArticle(sheet, rowNumber, keyword) {
 
     var response = UrlFetchApp.fetch(apiUrl, options);
     var responseCode = response.getResponseCode();
-    var responseBody = JSON.parse(response.getContentText());
+    var responseText = response.getContentText();
+
+    // Parse JSON safely — Vercel may return non-JSON error pages
+    var responseBody;
+    try {
+      responseBody = JSON.parse(responseText);
+    } catch (parseErr) {
+      sheet.getRange(rowNumber, 2).setValue("");
+      sheet.getRange(rowNumber, 5).setValue(
+        "HTTP " + responseCode + ": " + responseText.substring(0, 300) + " — will retry"
+      );
+      return;
+    }
 
     if (responseCode === 201 && responseBody.success) {
       // Success

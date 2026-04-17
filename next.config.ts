@@ -67,13 +67,15 @@ const nextConfig: NextConfig = {
     ],
   },
 
+  serverExternalPackages: ["sharp"],
+
   experimental: {
     optimizeCss: true,
   },
 
   compiler: {
     ...(process.env.NODE_ENV === "production" && {
-      removeConsole: { exclude: ["error"] },
+      removeConsole: { exclude: ["error", "warn", "log"] },
     }),
   },
 

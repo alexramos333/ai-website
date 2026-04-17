@@ -1,8 +1,8 @@
 // Server-side only — AI blog image generation via fal.ai FLUX.2 Pro.
 // Generates a hero image, resizes to 1200x630 WebP, and uploads to Supabase Storage.
+// Uses dynamic imports so that if sharp or fal.ai fail to load, article generation
+// continues without an image instead of crashing the entire route.
 
-import { fal } from "@fal-ai/client";
-import sharp from "sharp";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const STORAGE_BUCKET = "images";
@@ -37,9 +37,13 @@ export async function generateBlogImage(
     return "";
   }
 
-  fal.config({ credentials: falKey });
-
   try {
+    // Dynamic imports — prevents crash if packages fail to load on serverless
+    const { fal } = await import("@fal-ai/client");
+    const sharp = (await import("sharp")).default;
+
+    fal.config({ credentials: falKey });
+
     console.log(`[IMAGE GEN] Generating image for slug="${slug}"...`);
     const startTime = Date.now();
 
