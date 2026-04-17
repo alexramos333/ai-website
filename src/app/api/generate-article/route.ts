@@ -124,7 +124,7 @@ function repairTruncatedJson(text: string): unknown {
   }
 }
 
-export const maxDuration = 120; // Allow up to 120s on Vercel Pro
+export const maxDuration = 300; // Allow up to 300s on Vercel Pro
 
 export async function POST(request: NextRequest) {
   // Rate limit: 5 per 10 minutes
@@ -364,7 +364,7 @@ export async function POST(request: NextRequest) {
     // ── Phase 3: Generate hero image (with timeout) ──
     // Runs AFTER article is saved. If it fails or times out, article stays published without image.
     const timeElapsed = Date.now() - startTime;
-    const timeRemaining = 110_000 - timeElapsed; // Leave 10s buffer before 120s limit
+    const timeRemaining = 280_000 - timeElapsed; // Leave 20s buffer before 300s limit
     let ogImageUrl = "";
 
     if (timeRemaining > 15_000) {
