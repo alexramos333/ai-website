@@ -1,5 +1,5 @@
 // Server-side only — AI blog image generation via fal.ai FLUX.2 Pro.
-// Generates a hero image, resizes to 1200x630 WebP, uploads to Supabase Storage.
+// Generates a hero image, resizes to 1200x630 WebP, and uploads to Supabase Storage.
 
 import { fal } from "@fal-ai/client";
 import sharp from "sharp";
