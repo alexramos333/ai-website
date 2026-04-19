@@ -52,10 +52,10 @@ export async function POST(request: NextRequest) {
   const { keyword } = parseResult.data;
   const supabase = createAdminClient();
 
-  // Check for duplicate keyword (already completed or in progress)
+  // Check for duplicate keyword (already completed or actively in progress)
   const { data: existing } = await supabase
     .from("article_generations")
-    .select("id, status, article_id")
+    .select("id, status, article_id, created_at")
     .eq("keyword", keyword.toLowerCase().trim())
     .in("status", ["completed", "in_progress"])
     .limit(1);
@@ -63,15 +63,27 @@ export async function POST(request: NextRequest) {
   if (existing && existing.length > 0) {
     const entry = existing[0];
     if (entry.status === "in_progress") {
+      // If the job has been "in_progress" for over 10 minutes, it's stale — auto-fail it
+      const ageMs = Date.now() - new Date(entry.created_at).getTime();
+      if (ageMs > 10 * 60 * 1000) {
+        console.warn(`[ARTICLE GEN] Stale job ${entry.id} for "${keyword}" (${Math.round(ageMs / 60_000)}min old). Marking as failed.`);
+        await supabase
+          .from("article_generations")
+          .update({ status: "failed", error_message: "Stale: timed out", completed_at: new Date().toISOString() })
+          .eq("id", entry.id);
+        // Fall through to create a new job
+      } else {
+        return createErrorResponse(
+          `Article generation for "${keyword}" is already in progress.`,
+          409,
+        );
+      }
+    } else {
       return createErrorResponse(
-        `Article generation for "${keyword}" is already in progress.`,
+        `Article for "${keyword}" already exists (generation ${entry.id}).`,
         409,
       );
     }
-    return createErrorResponse(
-      `Article for "${keyword}" already exists (generation ${entry.id}).`,
-      409,
-    );
   }
 
   // Create tracking row
