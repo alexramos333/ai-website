@@ -1,5 +1,5 @@
 /**
- * Google Apps Script — AI Blog Article Generator (Multi-Step Pipeline)
+ * Google Apps Script — AI Blog Article Generator (4-Step Pipeline)
  *
  * SETUP INSTRUCTIONS:
  * 1. Open your Google Sheet
@@ -27,10 +27,11 @@
  * HOW IT WORKS:
  * Every 5 minutes the script checks for the FIRST row where column A has a
  * keyword but column B is empty. It processes only ONE keyword per trigger
- * using a 3-step pipeline:
+ * using a 4-step pipeline:
  *   Step 1: POST /research — Claude researches the keyword (~15-30s)
- *   Step 2: POST /write    — Claude writes the article and saves to DB (~90-180s)
- *   Step 3: POST /image    — Generates a hero image via AI (~20-40s)
+ *   Step 2: POST /plan    — Claude creates an article plan with metadata (~30-60s)
+ *   Step 3: POST /write   — Claude writes the article in Markdown, saved as HTML (~90-180s)
+ *   Step 4: POST /image   — Generates a hero image via AI (~20-40s)
  * Each step is a separate API call with its own timeout budget.
  */
 
@@ -56,7 +57,7 @@ function processNewKeywords() {
 }
 
 /**
- * Generate a single article using the 3-step pipeline.
+ * Generate a single article using the 4-step pipeline.
  */
 function generateArticle(sheet, rowNumber, keyword) {
   var props = PropertiesService.getScriptProperties();
@@ -88,13 +89,32 @@ function generateArticle(sheet, rowNumber, keyword) {
   var jobId = researchResult.data.job_id;
   var researchData = researchResult.data.research_data;
 
-  // ── Step 2: Write ──
+  // ── Step 2: Plan ──
+  sheet.getRange(rowNumber, 2).setValue("Planning...");
+  SpreadsheetApp.flush();
+
+  var planPayload = {
+    job_id: jobId,
+    research_data: researchData,
+  };
+
+  var planResult = callApi(baseUrl + "/plan", planPayload, secret);
+
+  if (!planResult.success) {
+    handleStepError(sheet, rowNumber, "Plan", planResult);
+    return;
+  }
+
+  var articlePlan = planResult.data.article_plan;
+  var imagePrompt = planResult.data.image_prompt || "";
+
+  // ── Step 3: Write ──
   sheet.getRange(rowNumber, 2).setValue("Writing...");
   SpreadsheetApp.flush();
 
   var writePayload = {
     job_id: jobId,
-    research_data: researchData,
+    article_plan: articlePlan,
   };
   if (authorId) writePayload.author_id = authorId;
 
@@ -106,9 +126,10 @@ function generateArticle(sheet, rowNumber, keyword) {
   }
 
   var articleUrl = writeResult.data.article ? writeResult.data.article.url : "";
-  var imagePrompt = writeResult.data.image_prompt || "";
+  // Use image_prompt from plan step (already captured above)
+  // Write step also returns it, but plan is the authoritative source
 
-  // ── Step 3: Image ──
+  // ── Step 4: Image ──
   sheet.getRange(rowNumber, 2).setValue("Generating image...");
   SpreadsheetApp.flush();
 
@@ -224,8 +245,9 @@ function testConnection() {
 
   Logger.log("API_URL: " + baseUrl);
   Logger.log("WEBHOOK_SECRET: " + (secret ? "Set (" + secret.length + " chars)" : "NOT SET"));
-  Logger.log("Setup looks good! The script calls 3 endpoints:");
+  Logger.log("Setup looks good! The script calls 4 endpoints:");
   Logger.log("  " + baseUrl + "/research");
+  Logger.log("  " + baseUrl + "/plan");
   Logger.log("  " + baseUrl + "/write");
   Logger.log("  " + baseUrl + "/image");
 }

@@ -305,23 +305,37 @@ export const generateArticleSchema = z.object({
 
 export type GenerateArticleInput = z.infer<typeof generateArticleSchema>;
 
-/** Schema for Step 2 (write) — receives job_id + research data from Step 1. */
-export const writeArticleSchema = z.object({
+/** Schema for Step 2 (plan) — receives job_id + research data from Step 1. */
+export const planArticleSchema = z.object({
   job_id: z.string().uuid("job_id must be a valid UUID"),
   research_data: z.string().min(1, "research_data is required"),
+});
+
+/** Schema for Step 3 (write) — receives job_id + article plan from Step 2. */
+export const writeArticleSchema = z.object({
+  job_id: z.string().uuid("job_id must be a valid UUID"),
+  article_plan: z.string().min(1, "article_plan is required"),
   author_id: z.string().uuid("author_id must be a valid UUID").optional(),
   publish: z.boolean().optional().default(true),
   tags: z.array(z.string()).optional(),
 });
 
-/** Schema for Step 3 (image) — receives job_id + optional image prompt from Step 2. */
+/** Schema for Step 4 (image) — receives job_id + optional image prompt from Step 3. */
 export const imageStepSchema = z.object({
   job_id: z.string().uuid("job_id must be a valid UUID"),
   image_prompt: z.string().optional(),
 });
 
-/** Schema to validate Claude's JSON response for a generated article. */
-export const generatedArticleResponseSchema = z.object({
+/** Schema for an outline section in the article plan. */
+const outlineSectionSchema = z.object({
+  heading: z.string().min(1),
+  level: z.number().int().min(2).max(3),
+  key_points: z.array(z.string()),
+  target_words: z.number().int().min(1),
+});
+
+/** Schema to validate Claude's JSON response for an article plan. */
+export const articlePlanResponseSchema = z.object({
   title: z.string().min(1),
   meta_title: z.string().min(1),
   meta_description: z.string().min(1),
@@ -335,5 +349,5 @@ export const generatedArticleResponseSchema = z.object({
     })
   ).default([]),
   image_prompt: z.string().min(1).optional(),
-  content: z.string().min(1),
+  outline: z.array(outlineSectionSchema).min(1),
 });

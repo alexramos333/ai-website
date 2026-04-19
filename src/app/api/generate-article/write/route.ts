@@ -1,6 +1,6 @@
 import { type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { writeArticleSchema, generatedArticleResponseSchema } from "@/lib/utils/validation";
+import { writeArticleSchema, articlePlanResponseSchema } from "@/lib/utils/validation";
 import {
   createSuccessResponse,
   createErrorResponse,
@@ -13,12 +13,12 @@ import {
   verifyToken,
   extractBearerToken,
   callClaude,
-  extractJson,
 } from "@/lib/article-generation";
 import {
-  BLOG_ARTICLE_SYSTEM_PROMPT,
-  BLOG_ARTICLE_USER_PROMPT,
+  ARTICLE_WRITE_SYSTEM_PROMPT,
+  ARTICLE_WRITE_USER_PROMPT,
 } from "@/lib/prompts/blog-article";
+import { markdownToHtml } from "@/lib/markdown";
 
 export const maxDuration = 300;
 
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     return createValidationErrorResponse(parseResult.error);
   }
 
-  const { job_id, research_data, publish = true, tags: extraTags } = parseResult.data;
+  const { job_id, article_plan, publish = true, tags: extraTags } = parseResult.data;
   const authorId = parseResult.data.author_id ?? process.env.DEFAULT_AUTHOR_ID;
 
   if (!authorId) {
@@ -79,6 +79,17 @@ export async function POST(request: NextRequest) {
   }
 
   const keyword = job.keyword;
+
+  // Parse the article plan to extract metadata
+  let plan: ReturnType<typeof articlePlanResponseSchema.parse>;
+  try {
+    const planData = JSON.parse(article_plan);
+    plan = articlePlanResponseSchema.parse(planData);
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "Unknown";
+    return createErrorResponse(`Invalid article_plan: ${msg}`, 400);
+  }
+
   let totalInputTokens = 0;
   let totalOutputTokens = 0;
 
@@ -89,79 +100,79 @@ export async function POST(request: NextRequest) {
       day: "numeric",
     });
 
-    console.log(`[ARTICLE GEN] Step 2: Writing article for "${keyword}"...`);
+    console.log(`[ARTICLE GEN] Step 3: Writing article for "${keyword}"...`);
 
     const stepStart = Date.now();
-    let parsed: unknown;
-    let articleResult: ReturnType<typeof generatedArticleResponseSchema.safeParse>;
 
-    // First attempt — 250s timeout (this step has a full 300s budget)
+    // Call Claude — outputs raw Markdown (no JSON parsing needed!)
+    let markdownContent: string;
+
     try {
-      const articleResponse = await callClaude(
-        BLOG_ARTICLE_SYSTEM_PROMPT,
-        BLOG_ARTICLE_USER_PROMPT(keyword, today, research_data),
-        16384,
-        250_000,
+      const writeResponse = await callClaude(
+        ARTICLE_WRITE_SYSTEM_PROMPT,
+        ARTICLE_WRITE_USER_PROMPT(keyword, today, article_plan),
+        12000,
+        250_000, // 250s timeout
       );
-      totalInputTokens += articleResponse.inputTokens;
-      totalOutputTokens += articleResponse.outputTokens;
+      totalInputTokens += writeResponse.inputTokens;
+      totalOutputTokens += writeResponse.outputTokens;
 
-      if (articleResponse.stopReason === "max_tokens") {
-        console.warn(`[ARTICLE GEN] Article response truncated (max_tokens). Attempting repair...`);
-      }
+      markdownContent = writeResponse.text.trim();
 
-      parsed = extractJson(articleResponse.text, articleResponse.stopReason);
-      articleResult = generatedArticleResponseSchema.safeParse(parsed);
-
-      if (!articleResult.success) {
-        const issues = articleResult.error.issues.map((i) => i.message).join(", ");
-        throw new Error(`Schema validation failed: ${issues}`);
+      if (writeResponse.stopReason === "max_tokens") {
+        console.warn(`[ARTICLE GEN] Article truncated at max_tokens. Using what we have.`);
       }
     } catch (firstError) {
-      // Only retry if we have enough time remaining (at least 40s)
+      // Retry with shorter target if we have time
       const elapsed = Date.now() - stepStart;
       const remaining = 290_000 - elapsed;
 
       if (remaining < 40_000) {
-        throw firstError; // No time for retry — let Apps Script retry the step
+        throw firstError;
       }
 
       const firstMsg = firstError instanceof Error ? firstError.message : "Unknown";
-      console.warn(`[ARTICLE GEN] First attempt failed: ${firstMsg}. Retrying with shorter target (${Math.round(remaining / 1000)}s remaining)...`);
+      console.warn(`[ARTICLE GEN] First attempt failed: ${firstMsg}. Retrying (${Math.round(remaining / 1000)}s remaining)...`);
 
       const retryResponse = await callClaude(
-        BLOG_ARTICLE_SYSTEM_PROMPT,
-        BLOG_ARTICLE_USER_PROMPT(keyword, today, research_data) +
-          "\n\nIMPORTANT: Keep the article under 1500 words to ensure the JSON fits within output limits. A complete shorter article is much better than a truncated one.",
-        8192,
-        remaining - 15_000, // Leave 15s for DB operations
+        ARTICLE_WRITE_SYSTEM_PROMPT,
+        ARTICLE_WRITE_USER_PROMPT(keyword, today, article_plan) +
+          "\n\nIMPORTANT: Keep the article under 1500 words. A complete shorter article is much better than no article.",
+        6000,
+        remaining - 15_000,
       );
       totalInputTokens += retryResponse.inputTokens;
       totalOutputTokens += retryResponse.outputTokens;
 
-      parsed = extractJson(retryResponse.text, retryResponse.stopReason);
-      articleResult = generatedArticleResponseSchema.safeParse(parsed);
-
-      if (!articleResult.success) {
-        console.error("Claude response failed validation after retry:", articleResult.error.issues);
-        throw new Error(`Article generation failed after retry. First: ${firstMsg}`);
-      }
+      markdownContent = retryResponse.text.trim();
     }
 
-    const article = articleResult.data;
+    // Strip markdown fences if Claude wrapped the whole response
+    if (markdownContent.startsWith("```")) {
+      markdownContent = markdownContent
+        .replace(/^```(?:markdown|md)?\s*\n?/, "")
+        .replace(/\n?\s*```$/, "");
+    }
 
-    // Sanitize all text fields
-    const title = sanitizeText(article.title, 200);
-    const content = sanitizeText(article.content, 100_000);
-    const excerpt = sanitizeText(article.excerpt, 500);
-    const metaTitle = sanitizeText(article.meta_title, 200);
-    const metaDescription = sanitizeText(article.meta_description, 500);
-    const slug = article.slug ? sanitizeText(article.slug, 200) : slugify(title);
+    // Validate we got meaningful content
+    if (markdownContent.length < 500) {
+      throw new Error("Claude returned an article that was too short (under 500 characters).");
+    }
+
+    // Convert Markdown to HTML
+    const htmlContent = await markdownToHtml(markdownContent);
+
+    // Extract metadata from the plan
+    const title = sanitizeText(plan.title, 200);
+    const excerpt = sanitizeText(plan.excerpt, 500);
+    const metaTitle = sanitizeText(plan.meta_title, 200);
+    const metaDescription = sanitizeText(plan.meta_description, 500);
+    const slug = plan.slug ? sanitizeText(plan.slug, 200) : slugify(title);
 
     // Merge generated tags with extra tags
     const allTags = [
       ...new Set([
-        ...article.tags.map((t: string) => t.toLowerCase()),
+        ...plan.tags.map((t: string) => t.toLowerCase()),
         ...(extraTags ?? []).map((t) => t.toLowerCase()),
       ]),
     ];
@@ -170,7 +181,7 @@ export async function POST(request: NextRequest) {
     const faqSchemaJson = JSON.stringify({
       "@context": "https://schema.org",
       "@type": "FAQPage",
-      mainEntity: article.faq_data.map((faq: { question: string; answer: string }) => ({
+      mainEntity: plan.faq_data.map((faq: { question: string; answer: string }) => ({
         "@type": "Question",
         name: faq.question,
         acceptedAnswer: {
@@ -180,7 +191,7 @@ export async function POST(request: NextRequest) {
       })),
     });
 
-    const contentWithFaqMarker = `${content}\n<!-- FAQ_SCHEMA:${faqSchemaJson} -->`;
+    const contentWithFaqMarker = `${htmlContent}\n<!-- FAQ_SCHEMA:${faqSchemaJson} -->`;
 
     // Insert article into database
     const { data: insertedArticle, error: insertError } = await supabase
@@ -214,7 +225,7 @@ export async function POST(request: NextRequest) {
     const inputCost = totalInputTokens * 0.000003;
     const outputCost = totalOutputTokens * 0.000015;
     console.log(
-      `[ARTICLE GEN] Step 2 complete: keyword="${keyword}" | slug="${insertedArticle.slug}" | ` +
+      `[ARTICLE GEN] Step 3 complete: keyword="${keyword}" | slug="${insertedArticle.slug}" | ` +
         `model=${ARTICLE_MODEL} | tokens=${tokensUsed} | cost=$${(inputCost + outputCost).toFixed(4)}`,
     );
 
@@ -239,7 +250,7 @@ export async function POST(request: NextRequest) {
           slug: insertedArticle.slug,
           url: `${siteUrl}/blog/${insertedArticle.slug}`,
         },
-        image_prompt: article.image_prompt || null,
+        image_prompt: plan.image_prompt || null,
         tokens_used: tokensUsed,
       },
       201,
