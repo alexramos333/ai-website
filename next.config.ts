@@ -48,6 +48,11 @@ const securityHeaders = [
   },
 ];
 
+// Derive Supabase storage hostname from the URL that's already guaranteed to be set
+const supabaseHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
+  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
+  : `${process.env.NEXT_PUBLIC_SUPABASE_PROJECT_ID ?? ""}.supabase.co`;
+
 const nextConfig: NextConfig = {
   reactCompiler: true,
 
@@ -61,7 +66,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: `${process.env.NEXT_PUBLIC_SUPABASE_PROJECT_ID}.supabase.co`,
+        hostname: supabaseHostname,
         pathname: "/storage/v1/object/public/**",
       },
     ],
