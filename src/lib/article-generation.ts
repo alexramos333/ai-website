@@ -120,8 +120,8 @@ function repairTruncatedJson(text: string): unknown {
     repaired += '"';
   }
 
-  // Close any open arrays and objects by counting brackets
-  const opens = { "{": 0, "[": 0 };
+  // Track the nesting order of brackets/braces so we close them in reverse
+  const stack: string[] = [];
   let inString = false;
   for (let i = 0; i < repaired.length; i++) {
     const ch = repaired[i];
@@ -130,23 +130,29 @@ function repairTruncatedJson(text: string): unknown {
       continue;
     }
     if (inString) continue;
-    if (ch === "{") opens["{"]++;
-    if (ch === "}") opens["{"]--;
-    if (ch === "[") opens["["]++;
-    if (ch === "]") opens["["]--;
+    if (ch === "{" || ch === "[") {
+      stack.push(ch);
+    } else if (ch === "}" || ch === "]") {
+      stack.pop();
+    }
   }
 
   console.log(
-    `[JSON REPAIR] Repairs needed: closed_quote=${closedQuote} | open_brackets=${opens["["]} | open_braces=${opens["{"]} | ` +
+    `[JSON REPAIR] Repairs needed: closed_quote=${closedQuote} | unclosed_stack=[${stack.join("")}] (${stack.length} deep) | ` +
       `trailing_text="...${repaired.slice(-200)}"`,
   );
 
-  // Remove any trailing comma before closing
+  // Remove any trailing comma or incomplete key-value pair before closing
+  // This handles truncation mid-object like: "name": "value", "url
+  repaired = repaired.replace(/,\s*"[^"]*"?\s*$/, "");
   repaired = repaired.replace(/,\s*$/, "");
 
-  // Close open brackets
-  for (let i = 0; i < opens["["]; i++) repaired += "]";
-  for (let i = 0; i < opens["{"]; i++) repaired += "}";
+  // Close open brackets/braces in reverse nesting order
+  for (let i = stack.length - 1; i >= 0; i--) {
+    repaired += stack[i] === "{" ? "}" : "]";
+  }
+
+  console.log(`[JSON REPAIR] After repair, final 200 chars: "...${repaired.slice(-200)}"`);
 
   try {
     const result = JSON.parse(repaired);

@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
     const researchResponse = await callClaude(
       KEYWORD_RESEARCH_SYSTEM_PROMPT,
       KEYWORD_RESEARCH_USER_PROMPT(keyword),
-      4096,
+      8192,
     );
 
     let researchData: string;

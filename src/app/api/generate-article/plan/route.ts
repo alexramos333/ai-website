@@ -85,13 +85,13 @@ export async function POST(request: NextRequest) {
     let parsed: unknown;
     let planResult: ReturnType<typeof articlePlanResponseSchema.safeParse>;
 
-    // First attempt — max_tokens=8192, 100s timeout
+    // First attempt — max_tokens=8192, 110s timeout (maxDuration=120s)
     try {
       const planResponse = await callClaude(
         ARTICLE_PLAN_SYSTEM_PROMPT,
         ARTICLE_PLAN_USER_PROMPT(keyword, today, research_data),
         8192,
-        100_000,
+        110_000,
       );
       totalInputTokens += planResponse.inputTokens;
       totalOutputTokens += planResponse.outputTokens;
