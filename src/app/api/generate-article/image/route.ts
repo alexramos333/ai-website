@@ -51,19 +51,47 @@ export async function POST(request: NextRequest) {
     return createErrorResponse("Generation job not found.", 404);
   }
 
-  if (!job.article_id) {
-    return createErrorResponse("Job has no article_id — run the write step first.", 400);
+  // Fetch article — by article_id if available, otherwise fall back to keyword slug lookup
+  let article: { id: string; slug: string; title: string } | null = null;
+
+  if (job.article_id) {
+    const { data, error: articleError } = await supabase
+      .from("articles")
+      .select("id, slug, title")
+      .eq("id", job.article_id)
+      .single();
+
+    if (!articleError && data) {
+      article = data;
+    } else {
+      console.warn(`[IMAGE GEN] article_id ${job.article_id} not found, trying slug lookup.`);
+    }
   }
 
-  // Fetch article for slug
-  const { data: article, error: articleError } = await supabase
-    .from("articles")
-    .select("id, slug, title")
-    .eq("id", job.article_id)
-    .single();
+  // Fallback: find the most recent article whose slug contains the keyword
+  if (!article) {
+    console.warn(`[IMAGE GEN] Job ${job_id} has no article_id. Attempting slug lookup for keyword="${job.keyword}".`);
+    const { data: articles } = await supabase
+      .from("articles")
+      .select("id, slug, title")
+      .ilike("slug", `%${job.keyword.replace(/\s+/g, "-")}%`)
+      .order("created_at", { ascending: false })
+      .limit(1);
 
-  if (articleError || !article) {
-    return createErrorResponse("Article not found.", 404);
+    if (articles && articles.length > 0) {
+      article = articles[0];
+      console.log(`[IMAGE GEN] Found article via slug lookup: id=${article.id} slug="${article.slug}"`);
+
+      // Backfill article_id on the job so future calls don't need the fallback
+      await supabase
+        .from("article_generations")
+        .update({ article_id: article.id })
+        .eq("id", job_id);
+    }
+  }
+
+  if (!article) {
+    return createErrorResponse("No article found for this job — run the write step first.", 400);
   }
 
   try {

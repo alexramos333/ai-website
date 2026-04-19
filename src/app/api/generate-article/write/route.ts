@@ -243,7 +243,7 @@ export async function POST(request: NextRequest) {
     );
 
     // Update generation tracking with article_id
-    await supabase
+    const { error: trackingError } = await supabase
       .from("article_generations")
       .update({
         article_id: insertedArticle.id,
@@ -251,6 +251,12 @@ export async function POST(request: NextRequest) {
         tokens_used: tokensUsed,
       })
       .eq("id", job_id);
+
+    if (trackingError) {
+      console.error(`[ARTICLE GEN] WARNING: Failed to set article_id on job ${job_id}: ${trackingError.message}`);
+    } else {
+      console.log(`[ARTICLE GEN] Job ${job_id} updated with article_id=${insertedArticle.id}`);
+    }
 
     const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/+$/, "");
 
