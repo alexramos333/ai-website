@@ -8,7 +8,7 @@ import {
   getRateLimitKey,
   checkRateLimit,
 } from "@/lib/utils/api";
-import { verifyToken, extractBearerToken, callClaude, extractJson } from "@/lib/article-generation";
+import { verifyToken, extractBearerToken, callClaude } from "@/lib/article-generation";
 import {
   KEYWORD_RESEARCH_SYSTEM_PROMPT,
   KEYWORD_RESEARCH_USER_PROMPT,
@@ -101,26 +101,15 @@ export async function POST(request: NextRequest) {
   try {
     console.log(`[ARTICLE GEN] Step 1: Researching keyword "${keyword}"...`);
 
+    // Research now outputs plain text (not JSON) — no parsing needed
     const researchResponse = await callClaude(
       KEYWORD_RESEARCH_SYSTEM_PROMPT,
       KEYWORD_RESEARCH_USER_PROMPT(keyword),
-      8192,
+      4096,
+      100_000, // 100s timeout (maxDuration=120s)
     );
 
-    let researchData: string;
-    try {
-      // Validate it's valid JSON, then pass as string
-      extractJson(researchResponse.text, researchResponse.stopReason);
-      researchData = researchResponse.text.trim();
-      // Strip markdown fences for clean embedding
-      if (researchData.startsWith("```")) {
-        researchData = researchData.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "");
-      }
-    } catch {
-      // If research JSON is invalid, use the raw text as context anyway
-      console.warn("[ARTICLE GEN] Research phase returned non-JSON, using as raw context.");
-      researchData = researchResponse.text.trim();
-    }
+    const researchData = researchResponse.text.trim();
 
     const tokensUsed = researchResponse.inputTokens + researchResponse.outputTokens;
     console.log(

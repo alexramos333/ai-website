@@ -85,13 +85,13 @@ export async function POST(request: NextRequest) {
     let parsed: unknown;
     let planResult: ReturnType<typeof articlePlanResponseSchema.safeParse>;
 
-    // First attempt — max_tokens=8192, 110s timeout (maxDuration=120s)
+    // First attempt — max_tokens=4096, 100s timeout (maxDuration=120s)
     try {
       const planResponse = await callClaude(
         ARTICLE_PLAN_SYSTEM_PROMPT,
         ARTICLE_PLAN_USER_PROMPT(keyword, today, research_data),
-        8192,
-        110_000,
+        4096,
+        100_000,
       );
       totalInputTokens += planResponse.inputTokens;
       totalOutputTokens += planResponse.outputTokens;
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     } catch (firstError) {
       // Retry with compact instructions if we have time
       const elapsed = Date.now() - stepStart;
-      const remaining = 110_000 - elapsed; // 110s budget (maxDuration=120)
+      const remaining = 100_000 - elapsed; // 100s budget (maxDuration=120)
 
       if (remaining < 30_000) {
         throw firstError;
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
         ARTICLE_PLAN_SYSTEM_PROMPT,
         ARTICLE_PLAN_USER_PROMPT(keyword, today, research_data) +
           "\n\nIMPORTANT: Keep key_points to 5 words max each. Limit outline to 8 sections. Keep FAQ answers to 1-2 sentences. Produce compact JSON.",
-        8192,
+        4096,
         remaining - 10_000,
       );
       totalInputTokens += retryResponse.inputTokens;
