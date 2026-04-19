@@ -67,11 +67,13 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    console.log(`[ARTICLE GEN] Step 3: Generating image for "${job.keyword}" (slug="${article.slug}")...`);
+    console.log(`[ARTICLE GEN] Step 4: Generating image for "${job.keyword}" (slug="${article.slug}") | image_prompt=${image_prompt ? image_prompt.length + " chars" : "none (using default)"}`);
 
     const prompt = image_prompt
       ? `Professional blog header image for an article about ${job.keyword}: ${image_prompt}`
       : `Professional blog header image: a photorealistic, visually striking scene representing the concept of ${job.keyword}. Clean composition, modern aesthetic, warm lighting. No text, words, letters, logos, or watermarks.`;
+
+    const imageStart = Date.now();
 
     // Race image generation against a 90s timeout
     const ogImageUrl = await Promise.race([
@@ -84,14 +86,16 @@ export async function POST(request: NextRequest) {
       ),
     ]);
 
+    const imageElapsed = ((Date.now() - imageStart) / 1000).toFixed(1);
+
     if (ogImageUrl) {
       await supabase
         .from("articles")
         .update({ og_image: ogImageUrl })
         .eq("id", article.id);
-      console.log(`[ARTICLE GEN] Step 3 complete. Image: ${ogImageUrl}`);
+      console.log(`[ARTICLE GEN] Step 4 complete: image=${ogImageUrl} | elapsed=${imageElapsed}s`);
     } else {
-      console.warn("[ARTICLE GEN] Step 3: Image generation failed or timed out.");
+      console.warn(`[ARTICLE GEN] Step 4: Image generation failed or timed out after ${imageElapsed}s.`);
     }
 
     // Mark job as completed (article is already published regardless of image outcome)

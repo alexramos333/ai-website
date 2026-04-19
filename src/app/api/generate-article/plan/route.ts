@@ -69,6 +69,9 @@ export async function POST(request: NextRequest) {
 
   const keyword = job.keyword;
 
+  let totalInputTokens = 0;
+  let totalOutputTokens = 0;
+
   try {
     const today = new Date().toLocaleDateString("en-US", {
       year: "numeric",
@@ -76,43 +79,85 @@ export async function POST(request: NextRequest) {
       day: "numeric",
     });
 
-    console.log(`[ARTICLE GEN] Step 2: Planning article for "${keyword}"...`);
+    console.log(`[ARTICLE GEN] Step 2: Planning article for "${keyword}" | research_data=${research_data.length} chars`);
 
-    const planResponse = await callClaude(
-      ARTICLE_PLAN_SYSTEM_PROMPT,
-      ARTICLE_PLAN_USER_PROMPT(keyword, today, research_data),
-      4096,
-      100_000, // 100s timeout — plan is a small JSON response
-    );
+    const stepStart = Date.now();
+    let parsed: unknown;
+    let planResult: ReturnType<typeof articlePlanResponseSchema.safeParse>;
 
-    const parsed = extractJson(planResponse.text, planResponse.stopReason);
-    const planResult = articlePlanResponseSchema.safeParse(parsed);
+    // First attempt — max_tokens=8192, 100s timeout
+    try {
+      const planResponse = await callClaude(
+        ARTICLE_PLAN_SYSTEM_PROMPT,
+        ARTICLE_PLAN_USER_PROMPT(keyword, today, research_data),
+        8192,
+        100_000,
+      );
+      totalInputTokens += planResponse.inputTokens;
+      totalOutputTokens += planResponse.outputTokens;
 
-    if (!planResult.success) {
-      const issues = planResult.error.issues.map((i) => i.message).join(", ");
-      console.error("Plan response failed validation:", issues);
-      throw new Error(`Plan validation failed: ${issues}`);
+      parsed = extractJson(planResponse.text, planResponse.stopReason);
+      planResult = articlePlanResponseSchema.safeParse(parsed);
+
+      if (!planResult.success) {
+        const issues = planResult.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(" | ");
+        console.error(`[ARTICLE GEN] Plan validation failed: ${issues}`);
+        throw new Error(`Plan validation failed: ${issues}`);
+      }
+    } catch (firstError) {
+      // Retry with compact instructions if we have time
+      const elapsed = Date.now() - stepStart;
+      const remaining = 110_000 - elapsed; // 110s budget (maxDuration=120)
+
+      if (remaining < 30_000) {
+        throw firstError;
+      }
+
+      const firstMsg = firstError instanceof Error ? firstError.message : "Unknown";
+      console.warn(`[ARTICLE GEN] Plan first attempt failed: ${firstMsg}. Retrying with compact prompt (${Math.round(remaining / 1000)}s remaining)...`);
+
+      const retryResponse = await callClaude(
+        ARTICLE_PLAN_SYSTEM_PROMPT,
+        ARTICLE_PLAN_USER_PROMPT(keyword, today, research_data) +
+          "\n\nIMPORTANT: Keep key_points to 5 words max each. Limit outline to 8 sections. Keep FAQ answers to 1-2 sentences. Produce compact JSON.",
+        8192,
+        remaining - 10_000,
+      );
+      totalInputTokens += retryResponse.inputTokens;
+      totalOutputTokens += retryResponse.outputTokens;
+
+      parsed = extractJson(retryResponse.text, retryResponse.stopReason);
+      planResult = articlePlanResponseSchema.safeParse(parsed);
+
+      if (!planResult.success) {
+        const issues = planResult.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(" | ");
+        console.error(`[ARTICLE GEN] Plan validation failed after retry: ${issues}`);
+        throw new Error(`Plan failed after retry. First: ${firstMsg}`);
+      }
     }
 
-    const tokensUsed = planResponse.inputTokens + planResponse.outputTokens;
+    const plan = planResult.data;
+    const tokensUsed = totalInputTokens + totalOutputTokens;
 
-    // Log cost
-    const inputCost = planResponse.inputTokens * 0.000003;
-    const outputCost = planResponse.outputTokens * 0.000015;
+    // Log plan details
+    const inputCost = totalInputTokens * 0.000003;
+    const outputCost = totalOutputTokens * 0.000015;
     console.log(
       `[ARTICLE GEN] Step 2 complete: keyword="${keyword}" | ` +
+        `outline_sections=${plan.outline.length} | faq_items=${plan.faq_data.length} | ` +
         `model=${ARTICLE_MODEL} | tokens=${tokensUsed} | cost=$${(inputCost + outputCost).toFixed(4)}`,
     );
 
     // Return the full plan JSON as a string for the write step
-    const planJson = JSON.stringify(planResult.data);
+    const planJson = JSON.stringify(plan);
+    console.log(`[ARTICLE GEN] Plan JSON size: ${planJson.length} chars`);
 
     return createSuccessResponse({
       success: true,
       job_id,
       keyword,
       article_plan: planJson,
-      image_prompt: planResult.data.image_prompt || null,
+      image_prompt: plan.image_prompt || null,
       tokens_used: tokensUsed,
     });
   } catch (error) {

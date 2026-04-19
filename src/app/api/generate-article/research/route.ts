@@ -123,7 +123,11 @@ export async function POST(request: NextRequest) {
     }
 
     const tokensUsed = researchResponse.inputTokens + researchResponse.outputTokens;
-    console.log(`[ARTICLE GEN] Step 1 complete. Research: ${researchResponse.outputTokens} output tokens.`);
+    console.log(
+      `[ARTICLE GEN] Step 1 complete: keyword="${keyword}" | ` +
+        `stop_reason=${researchResponse.stopReason} | output=${researchResponse.outputTokens} tokens | ` +
+        `research_data=${researchData.length} chars`,
+    );
 
     return createSuccessResponse({
       success: true,

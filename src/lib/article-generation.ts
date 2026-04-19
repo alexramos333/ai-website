@@ -29,6 +29,9 @@ export async function callClaude(
   const anthropic = getAnthropicClient();
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const callStart = Date.now();
+
+  console.log(`[CLAUDE CALL] Starting: model=${ARTICLE_MODEL} | max_tokens=${maxTokens} | timeout=${Math.round(timeoutMs / 1000)}s | system_prompt=${systemPrompt.length} chars | user_message=${userMessage.length} chars`);
 
   try {
     const message = await anthropic.messages.create(
@@ -47,9 +50,21 @@ export async function callClaude(
       { signal: controller.signal },
     );
 
+    const elapsed = ((Date.now() - callStart) / 1000).toFixed(1);
     const textBlock = message.content.find((block) => block.type === "text");
     if (!textBlock || textBlock.type !== "text") {
       throw new Error("No text response from Claude.");
+    }
+
+    const outputPct = ((message.usage.output_tokens / maxTokens) * 100).toFixed(1);
+    console.log(
+      `[CLAUDE CALL] Complete: ${elapsed}s | stop_reason=${message.stop_reason} | ` +
+        `input=${message.usage.input_tokens} tokens | output=${message.usage.output_tokens}/${maxTokens} tokens (${outputPct}%) | ` +
+        `response=${textBlock.text.length} chars`,
+    );
+
+    if (message.stop_reason === "max_tokens") {
+      console.warn(`[CLAUDE CALL] ⚠ TRUNCATED — output hit max_tokens (${maxTokens}). Response ends with: "${textBlock.text.slice(-200)}"`);
     }
 
     return {
@@ -69,19 +84,28 @@ export function extractJson(rawText: string, stopReason: string): unknown {
 
   // Strip markdown fences
   if (text.startsWith("```")) {
+    console.log("[JSON PARSE] Stripping markdown fences from response");
     text = text.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "");
   }
 
+  // Log what we're trying to parse
+  console.log(`[JSON PARSE] Attempting parse: ${text.length} chars | stop_reason=${stopReason} | starts_with="${text.slice(0, 80)}..." | ends_with="...${text.slice(-80)}"`);
+
   // First try: parse as-is
   try {
-    return JSON.parse(text);
-  } catch {
+    const result = JSON.parse(text);
+    console.log("[JSON PARSE] Success on first attempt");
+    return result;
+  } catch (parseError) {
+    const parseMsg = parseError instanceof Error ? parseError.message : "Unknown parse error";
+    console.warn(`[JSON PARSE] First parse failed: ${parseMsg}`);
+
     // If truncated at max_tokens, try to repair the JSON
     if (stopReason === "max_tokens") {
-      console.warn("[ARTICLE GEN] Response truncated at max_tokens, attempting JSON repair...");
+      console.warn("[JSON PARSE] Response truncated at max_tokens, attempting JSON repair...");
       return repairTruncatedJson(text);
     }
-    throw new Error("Claude returned invalid JSON.");
+    throw new Error(`Claude returned invalid JSON. Parse error: ${parseMsg}`);
   }
 }
 
@@ -91,7 +115,8 @@ function repairTruncatedJson(text: string): unknown {
 
   // If we're inside a string value, close it
   const quoteCount = (repaired.match(/(?<!\\)"/g) || []).length;
-  if (quoteCount % 2 !== 0) {
+  const closedQuote = quoteCount % 2 !== 0;
+  if (closedQuote) {
     repaired += '"';
   }
 
@@ -111,6 +136,11 @@ function repairTruncatedJson(text: string): unknown {
     if (ch === "]") opens["["]--;
   }
 
+  console.log(
+    `[JSON REPAIR] Repairs needed: closed_quote=${closedQuote} | open_brackets=${opens["["]} | open_braces=${opens["{"]} | ` +
+      `trailing_text="...${repaired.slice(-200)}"`,
+  );
+
   // Remove any trailing comma before closing
   repaired = repaired.replace(/,\s*$/, "");
 
@@ -119,8 +149,12 @@ function repairTruncatedJson(text: string): unknown {
   for (let i = 0; i < opens["{"]; i++) repaired += "}";
 
   try {
-    return JSON.parse(repaired);
-  } catch {
-    throw new Error("Claude returned truncated JSON that could not be repaired.");
+    const result = JSON.parse(repaired);
+    console.log("[JSON REPAIR] Success — repaired JSON parsed successfully");
+    return result;
+  } catch (repairError) {
+    const repairMsg = repairError instanceof Error ? repairError.message : "Unknown";
+    console.error(`[JSON REPAIR] Failed — could not repair: ${repairMsg} | final 300 chars: "...${repaired.slice(-300)}"`);
+    throw new Error(`Claude returned truncated JSON that could not be repaired. Repair error: ${repairMsg}`);
   }
 }

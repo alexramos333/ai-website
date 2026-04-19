@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
       day: "numeric",
     });
 
-    console.log(`[ARTICLE GEN] Step 3: Writing article for "${keyword}"...`);
+    console.log(`[ARTICLE GEN] Step 3: Writing article for "${keyword}" | plan=${article_plan.length} chars`);
 
     const stepStart = Date.now();
 
@@ -119,8 +119,13 @@ export async function POST(request: NextRequest) {
 
       markdownContent = writeResponse.text.trim();
 
+      console.log(
+        `[ARTICLE GEN] Write attempt 1: stop_reason=${writeResponse.stopReason} | ` +
+          `markdown=${markdownContent.length} chars | elapsed=${((Date.now() - stepStart) / 1000).toFixed(1)}s`,
+      );
+
       if (writeResponse.stopReason === "max_tokens") {
-        console.warn(`[ARTICLE GEN] Article truncated at max_tokens. Using what we have.`);
+        console.warn(`[ARTICLE GEN] Article truncated at max_tokens. Using what we have (${markdownContent.length} chars).`);
       }
     } catch (firstError) {
       // Retry with shorter target if we have time
@@ -132,7 +137,7 @@ export async function POST(request: NextRequest) {
       }
 
       const firstMsg = firstError instanceof Error ? firstError.message : "Unknown";
-      console.warn(`[ARTICLE GEN] First attempt failed: ${firstMsg}. Retrying (${Math.round(remaining / 1000)}s remaining)...`);
+      console.warn(`[ARTICLE GEN] Write attempt 1 failed: ${firstMsg}. Retrying with shorter target (${Math.round(remaining / 1000)}s remaining)...`);
 
       const retryResponse = await callClaude(
         ARTICLE_WRITE_SYSTEM_PROMPT,
@@ -145,10 +150,16 @@ export async function POST(request: NextRequest) {
       totalOutputTokens += retryResponse.outputTokens;
 
       markdownContent = retryResponse.text.trim();
+
+      console.log(
+        `[ARTICLE GEN] Write attempt 2 (retry): stop_reason=${retryResponse.stopReason} | ` +
+          `markdown=${markdownContent.length} chars | elapsed=${((Date.now() - stepStart) / 1000).toFixed(1)}s`,
+      );
     }
 
     // Strip markdown fences if Claude wrapped the whole response
     if (markdownContent.startsWith("```")) {
+      console.log("[ARTICLE GEN] Stripping markdown fences from article response");
       markdownContent = markdownContent
         .replace(/^```(?:markdown|md)?\s*\n?/, "")
         .replace(/\n?\s*```$/, "");
@@ -156,11 +167,12 @@ export async function POST(request: NextRequest) {
 
     // Validate we got meaningful content
     if (markdownContent.length < 500) {
-      throw new Error("Claude returned an article that was too short (under 500 characters).");
+      throw new Error(`Claude returned an article that was too short (${markdownContent.length} chars, need 500+).`);
     }
 
     // Convert Markdown to HTML
     const htmlContent = await markdownToHtml(markdownContent);
+    console.log(`[ARTICLE GEN] Markdown→HTML conversion: ${markdownContent.length} chars MD → ${htmlContent.length} chars HTML`);
 
     // Extract metadata from the plan
     const title = sanitizeText(plan.title, 200);
