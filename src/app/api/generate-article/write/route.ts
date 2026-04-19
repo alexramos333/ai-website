@@ -91,16 +91,17 @@ export async function POST(request: NextRequest) {
 
     console.log(`[ARTICLE GEN] Step 2: Writing article for "${keyword}"...`);
 
-    // First attempt — 180s timeout leaves room for a retry + DB operations
+    const stepStart = Date.now();
     let parsed: unknown;
     let articleResult: ReturnType<typeof generatedArticleResponseSchema.safeParse>;
 
+    // First attempt — 250s timeout (this step has a full 300s budget)
     try {
       const articleResponse = await callClaude(
         BLOG_ARTICLE_SYSTEM_PROMPT,
         BLOG_ARTICLE_USER_PROMPT(keyword, today, research_data),
         16384,
-        180_000,
+        250_000,
       );
       totalInputTokens += articleResponse.inputTokens;
       totalOutputTokens += articleResponse.outputTokens;
@@ -117,16 +118,23 @@ export async function POST(request: NextRequest) {
         throw new Error(`Schema validation failed: ${issues}`);
       }
     } catch (firstError) {
-      // Retry once with a shorter article target — 90s timeout
+      // Only retry if we have enough time remaining (at least 40s)
+      const elapsed = Date.now() - stepStart;
+      const remaining = 290_000 - elapsed;
+
+      if (remaining < 40_000) {
+        throw firstError; // No time for retry — let Apps Script retry the step
+      }
+
       const firstMsg = firstError instanceof Error ? firstError.message : "Unknown";
-      console.warn(`[ARTICLE GEN] First attempt failed: ${firstMsg}. Retrying with shorter target...`);
+      console.warn(`[ARTICLE GEN] First attempt failed: ${firstMsg}. Retrying with shorter target (${Math.round(remaining / 1000)}s remaining)...`);
 
       const retryResponse = await callClaude(
         BLOG_ARTICLE_SYSTEM_PROMPT,
         BLOG_ARTICLE_USER_PROMPT(keyword, today, research_data) +
           "\n\nIMPORTANT: Keep the article under 1500 words to ensure the JSON fits within output limits. A complete shorter article is much better than a truncated one.",
-        16384,
-        90_000,
+        8192,
+        remaining - 15_000, // Leave 15s for DB operations
       );
       totalInputTokens += retryResponse.inputTokens;
       totalOutputTokens += retryResponse.outputTokens;
