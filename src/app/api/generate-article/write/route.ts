@@ -205,31 +205,32 @@ export async function POST(request: NextRequest) {
 
     const contentWithFaqMarker = `${htmlContent}\n<!-- FAQ_SCHEMA:${faqSchemaJson} -->`;
 
-    // Insert article into database
+    // Upsert article — if slug already exists (from a previous partial run), update it
+    const articleData = {
+      title,
+      slug,
+      content: contentWithFaqMarker,
+      excerpt,
+      meta_title: metaTitle,
+      meta_description: metaDescription,
+      published: publish,
+      published_at: publish ? new Date().toISOString() : null,
+      tags: allTags,
+      author_id: authorId,
+    };
+
     const { data: insertedArticle, error: insertError } = await supabase
       .from("articles")
-      .insert({
-        title,
-        slug,
-        content: contentWithFaqMarker,
-        excerpt,
-        meta_title: metaTitle,
-        meta_description: metaDescription,
-        published: publish,
-        published_at: publish ? new Date().toISOString() : null,
-        tags: allTags,
-        author_id: authorId,
-      })
+      .upsert(articleData, { onConflict: "slug" })
       .select("id, slug")
       .single();
 
     if (insertError) {
-      console.error("Article insert error:", insertError.message);
-      if (insertError.message.includes("duplicate") || insertError.message.includes("unique")) {
-        throw new Error(`Article with slug "${slug}" already exists in the database.`);
-      }
-      throw new Error(`Database insert failed: ${insertError.message}`);
+      console.error("Article upsert error:", insertError.message);
+      throw new Error(`Database upsert failed: ${insertError.message}`);
     }
+
+    console.log(`[ARTICLE GEN] Article saved: slug="${insertedArticle.slug}" | id=${insertedArticle.id}`);
 
     const tokensUsed = totalInputTokens + totalOutputTokens;
 
