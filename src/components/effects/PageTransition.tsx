@@ -27,7 +27,7 @@ export default function PageTransition() {
             className="h-[120px] w-[120px] rounded-full"
             style={{
               background:
-                "linear-gradient(#001138, #001138) padding-box, linear-gradient(135deg, #FF9B60, #f2295b) border-box",
+                "linear-gradient(#060d2e, #060d2e) padding-box, linear-gradient(135deg, #FF9B60, #f2295b) border-box",
               border: "4px solid transparent",
             }}
             initial={{ scale: 0, opacity: 1 }}
