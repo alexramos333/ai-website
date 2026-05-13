@@ -524,11 +524,15 @@ export default function HomePage() {
             <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {skillCategories.map((category) => (
                 <AnimatedGlassCard key={category.title}>
-                  <h3 className="text-xl font-black">{category.title}</h3>
+                  <h3 className="border-b border-[#5de6fc] pb-2 text-xl font-black">{category.title}</h3>
                   <ul className="mt-4 space-y-2">
                     {category.skills.map((skill) => (
-                      <li key={skill} className="text-sm text-white/75">
-                        &bull; {skill}
+                      <li key={skill} className="flex items-start gap-2 text-sm font-bold text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="mt-0.5 shrink-0 text-[#5de6fc]" aria-hidden="true">
+                          <circle cx="12" cy="12" r="10" opacity="0.25" />
+                          <path d="M10 15.17l-3.59-3.58L5 13l5 5 9-9-1.41-1.42L10 15.17z" />
+                        </svg>
+                        {skill}
                       </li>
                     ))}
                   </ul>
