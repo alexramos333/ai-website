@@ -65,23 +65,150 @@ const portfolioItems: PortfolioItem[] = [
 ];
 
 interface TeamMember {
-  emoji: string;
   role: string;
+  icon: React.ReactNode;
 }
 
+const iconProps = {
+  xmlns: "http://www.w3.org/2000/svg",
+  width: 40,
+  height: 40,
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.5,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  className: "mx-auto text-[#5de6fc]",
+  "aria-hidden": true as const,
+};
+
 const teamMembers: TeamMember[] = [
-  { emoji: "\u{1F468}\u200D\u{1F4BB}", role: "AI Engineer" },
-  { emoji: "\u{1F3A8}", role: "UI/UX Designer" },
-  { emoji: "\u{1F4CA}", role: "Data Scientist" },
-  { emoji: "\u{1F527}", role: "Backend Dev" },
-  { emoji: "\u{1F4F1}", role: "Mobile Dev" },
-  { emoji: "\u{1F6E1}\uFE0F", role: "Security Expert" },
-  { emoji: "\u2601\uFE0F", role: "Cloud Architect" },
-  { emoji: "\u{1F916}", role: "ML Engineer" },
-  { emoji: "\u{1F4C8}", role: "Growth Hacker" },
-  { emoji: "\u270D\uFE0F", role: "Content Writer" },
-  { emoji: "\u{1F3AF}", role: "SEO Specialist" },
-  { emoji: "\u{1F4A1}", role: "Product Manager" },
+  {
+    role: "Full-Stack AI Software Developer",
+    icon: (
+      <svg {...iconProps} viewBox="0 0 24 24">
+        <path d="M12 2a6 6 0 0 1 6 6c0 2.5-1.5 4.5-3.5 5.5C16.5 14.5 18 16 18 18v2H6v-2c0-2 1.5-3.5 3.5-4.5C7.5 12.5 6 10.5 6 8a6 6 0 0 1 6-6z" />
+        <path d="M9 8c0-1 .5-2 1.5-2.5M15 8c0-1-.5-2-1.5-2.5" />
+        <path d="M8 22v-2M16 22v-2" />
+      </svg>
+    ),
+  },
+  {
+    role: "AI Automation Expert",
+    icon: (
+      <svg {...iconProps} viewBox="0 0 24 24">
+        <rect x="5" y="2" width="14" height="8" rx="2" />
+        <circle cx="9" cy="6" r="1" fill="currentColor" />
+        <circle cx="15" cy="6" r="1" fill="currentColor" />
+        <path d="M9 10v2M15 10v2" />
+        <rect x="7" y="14" width="10" height="6" rx="1" />
+        <path d="M12 10v4M10 20v2M14 20v2" />
+      </svg>
+    ),
+  },
+  {
+    role: "AI Agent Expert",
+    icon: (
+      <svg {...iconProps} viewBox="0 0 24 24">
+        <circle cx="12" cy="8" r="5" />
+        <path d="M12 3v0" />
+        <path d="M9.5 6.5L10.5 7.5" />
+        <path d="M14.5 6.5L13.5 7.5" />
+        <circle cx="12" cy="8" r="1" fill="currentColor" />
+        <path d="M7 13c-2 1-3 3-3 5v2h16v-2c0-2-1-4-3-5" />
+        <path d="M8 8h-.5a1 1 0 0 1 0-2H8M16 8h.5a1 1 0 0 0 0-2H16" />
+      </svg>
+    ),
+  },
+  {
+    role: "Full-Stack Web Developer",
+    icon: (
+      <svg {...iconProps} viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M2 12h20" />
+        <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z" />
+      </svg>
+    ),
+  },
+  {
+    role: "Digital Marketer",
+    icon: (
+      <svg {...iconProps} viewBox="0 0 24 24">
+        <rect x="2" y="3" width="20" height="14" rx="2" />
+        <path d="M8 21h8M12 17v4" />
+        <polyline points="7 10 10 7 13 10 17 7" />
+      </svg>
+    ),
+  },
+  {
+    role: "Sales Funnel Builder",
+    icon: (
+      <svg {...iconProps} viewBox="0 0 24 24">
+        <path d="M4 4h16l-6 8v6l-4 2v-8z" />
+        <circle cx="17" cy="7" r="3" />
+        <path d="M17 6v2M16 7h2" />
+      </svg>
+    ),
+  },
+  {
+    role: "Video Editor",
+    icon: (
+      <svg {...iconProps} viewBox="0 0 24 24">
+        <rect x="2" y="5" width="14" height="14" rx="2" />
+        <path d="M16 10l6-4v12l-6-4" />
+      </svg>
+    ),
+  },
+  {
+    role: "Graphic Designer",
+    icon: (
+      <svg {...iconProps} viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="18" rx="2" />
+        <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+        <path d="M21 15l-5-5L5 21" />
+        <path d="M14 14l3-3 4 4" />
+      </svg>
+    ),
+  },
+  {
+    role: "Email Marketer",
+    icon: (
+      <svg {...iconProps} viewBox="0 0 24 24">
+        <rect x="2" y="4" width="20" height="16" rx="2" />
+        <path d="M22 4L12 13 2 4" />
+      </svg>
+    ),
+  },
+  {
+    role: "Copywriter",
+    icon: (
+      <svg {...iconProps} viewBox="0 0 24 24">
+        <path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+      </svg>
+    ),
+  },
+  {
+    role: "Project Manager",
+    icon: (
+      <svg {...iconProps} viewBox="0 0 24 24">
+        <path d="M12 2L2 7l10 5 10-5-10-5z" />
+        <path d="M2 17l10 5 10-5" />
+        <path d="M2 12l10 5 10-5" />
+      </svg>
+    ),
+  },
+  {
+    role: "SEO Expert",
+    icon: (
+      <svg {...iconProps} viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="18" rx="2" />
+        <path d="M7 8h10M7 12h6M7 16h8" />
+        <path d="M17 17l4 4" />
+        <circle cx="15" cy="15" r="2" />
+      </svg>
+    ),
+  },
 ];
 
 interface SkillCategory {
@@ -260,11 +387,11 @@ export default function HomePage() {
               {teamMembers.map((member) => (
                 <AnimatedGlassCard
                   key={member.role}
-                  padding="sm"
+                  padding="md"
                   className="text-center"
                 >
-                  <p className="text-4xl">{member.emoji}</p>
-                  <p className="mt-2 text-sm font-black">{member.role}</p>
+                  <div className="mb-3">{member.icon}</div>
+                  <p className="text-base font-black leading-tight">{member.role}</p>
                 </AnimatedGlassCard>
               ))}
             </div>
