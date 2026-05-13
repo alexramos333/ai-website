@@ -502,11 +502,11 @@ export default function EmailGeneratorWizard() {
                   className="w-full rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white outline-none transition-colors focus:border-white/40"
                   aria-label="Select email sequence type"
                 >
-                  <option value="" className="bg-[#060d2e]">
+                  <option value="" className="bg-[#001138]">
                     -- Select a sequence type --
                   </option>
                   {SEQUENCE_TYPE_LIST.map((type) => (
-                    <option key={type.key} value={type.key} className="bg-[#060d2e]">
+                    <option key={type.key} value={type.key} className="bg-[#001138]">
                       {type.emoji} {type.name}
                     </option>
                   ))}

@@ -66,7 +66,7 @@ export default function Header({ user = null }: HeaderProps) {
     <header
       className={`fixed top-0 right-0 left-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "border-b border-white/10 bg-[#060d2e]/95"
+          ? "border-b border-white/10 bg-[#001138]/95"
           : "bg-transparent"
       }`}
     >
@@ -109,7 +109,7 @@ export default function Header({ user = null }: HeaderProps) {
                 </Link>
                 {openDropdown === link.href && (
                   <div className="absolute left-0 top-full pt-2">
-                    <div className="min-w-[220px] rounded-lg border border-white/15 bg-[#060d2e]/95 py-2 shadow-lg backdrop-blur-sm">
+                    <div className="min-w-[220px] rounded-lg border border-white/15 bg-[#001138]/95 py-2 shadow-lg backdrop-blur-sm">
                       {link.children.map((child) => (
                         <Link
                           key={child.href}
@@ -190,7 +190,7 @@ export default function Header({ user = null }: HeaderProps) {
           isMenuOpen ? "max-h-96" : "max-h-0"
         }`}
       >
-        <div className="border-t border-white/10 bg-[#060d2e]/95 px-6 py-4">
+        <div className="border-t border-white/10 bg-[#001138]/95 px-6 py-4">
           {navLinks.map((link) => (
             <div key={link.href}>
               <Link

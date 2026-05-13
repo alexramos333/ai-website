@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "@/styles/globals.css";
-import LazySpaceBackground from "@/components/effects/LazySpaceBackground";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -35,9 +34,8 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href={`https://${process.env.NEXT_PUBLIC_SUPABASE_PROJECT_ID}.supabase.co`} />
       </head>
-      <body className="min-h-screen bg-[#060d2e] font-sans text-white antialiased">
-        <LazySpaceBackground />
-        <div className="relative z-10">{children}</div>
+      <body className="min-h-screen bg-[#001138] font-sans text-white antialiased">
+        {children}
       </body>
     </html>
   );
