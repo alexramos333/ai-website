@@ -37,7 +37,7 @@ export default function SectionHeading({
           {children}
         </h2>
         <div
-          className="mt-4 h-[3px] w-full rounded-full bg-[#5de6fc]"
+          className="mt-4 h-[2px] w-full rounded-full bg-[#5de6fc]"
         />
       </div>
     </div>
