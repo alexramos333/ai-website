@@ -32,15 +32,7 @@ export default function Footer() {
           </h3>
           <div className="mt-4 flex flex-col gap-2">
             <a
-              href="https://twitter.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-white/75 transition-colors hover:text-white"
-            >
-              Twitter
-            </a>
-            <a
-              href="https://linkedin.com"
+              href="https://www.linkedin.com/in/alex-r-a330a7137/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white/75 transition-colors hover:text-white"
