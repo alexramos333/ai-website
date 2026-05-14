@@ -15,13 +15,13 @@ export default function Footer() {
           <address className="mt-4 space-y-2 not-italic text-white/75">
             <p>
               <a
-                href="mailto:hello@aiwebsite.com"
+                href="mailto:alexramos300@gmail.com"
                 className="transition-colors hover:text-white"
               >
-                hello@aiwebsite.com
+                alexramos300@gmail.com
               </a>
             </p>
-            <p>San Francisco, CA</p>
+            <p>Wilmington, NC</p>
           </address>
         </div>
 
