@@ -573,7 +573,7 @@ export default function HomePage() {
                   <h3 className="text-xl font-black">Phone Number</h3>
                 </div>
                 <div className="mt-2 border-b border-[#5de6fc]" />
-                <p className="mt-4 text-2xl font-black">910-619-9205</p>
+                <p className="mt-4 text-4xl font-black">910-619-9205</p>
               </GlassCard>
 
               <GlassCard>
