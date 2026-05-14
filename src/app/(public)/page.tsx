@@ -21,15 +21,12 @@ interface CaseStudy {
 }
 
 const caseStudies: CaseStudy[] = [
-  { stat: "500% ROI", detail: "E-commerce revenue growth in 6 months" },
-  { stat: "10x Leads", detail: "B2B lead generation via AI chatbots" },
-  { stat: "3M+ Views", detail: "Viral social media campaign reach" },
-  { stat: "$2M Saved", detail: "Automation replacing manual workflows" },
-  { stat: "85% Open Rate", detail: "AI-optimized email marketing" },
-  { stat: "40% Lower CAC", detail: "PPC optimization with machine learning" },
-  { stat: "#1 Rankings", detail: "SEO dominance in competitive niches" },
-  { stat: "200% Traffic", detail: "Content strategy powered by AI insights" },
-  { stat: "98% Retention", detail: "Customer loyalty through personalization" },
+  { stat: "$0 - $50,000 In Sales In 60 Days With 10X ROI", detail: "" },
+  { stat: "345% Increase In Total Leads In 30 Days", detail: "" },
+  { stat: "77% Decrease In Cost Per Lead In 30 Days", detail: "" },
+  { stat: "32% Decrease In Average Cost Per Lead Over 8 Months Across 40+ Locations", detail: "" },
+  { stat: "280% Increase In Total Leads In 30 Days", detail: "" },
+  { stat: "92% Decrease In Cost Per Lead In 30 Days", detail: "" },
 ];
 
 interface PortfolioItem {
@@ -465,9 +462,9 @@ export default function HomePage() {
             <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {caseStudies.map((study) => (
                 <AnimatedGlassCard key={study.stat}>
-                  <p className="text-sm text-[#3399FF]">Case Study</p>
-                  <p className="mt-2 text-xl font-black">{study.stat}</p>
-                  <p className="mt-1 text-white/75">{study.detail}</p>
+                  <p className="text-lg font-black">Case Study</p>
+                  <div className="mt-2 border-b border-[#5de6fc]" />
+                  <p className="mt-4 text-2xl font-black">{study.stat}</p>
                 </AnimatedGlassCard>
               ))}
             </div>
