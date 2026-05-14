@@ -37,7 +37,7 @@ export default function SectionHeading({
           {children}
         </h2>
         <div
-          className={`mt-4 h-[3px] w-full rounded-full bg-gradient-to-r ${accentMap[accentColor]}`}
+          className="mt-4 h-[3px] w-full rounded-full bg-[#5de6fc]"
         />
       </div>
     </div>
