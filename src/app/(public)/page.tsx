@@ -544,9 +544,9 @@ export default function HomePage() {
                   <ul className="mt-4 space-y-2">
                     {category.skills.map((skill) => (
                       <li key={skill} className="flex items-start gap-2 text-sm font-bold text-white">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="mt-0.5 shrink-0 text-[#5de6fc]" aria-hidden="true">
-                          <circle cx="12" cy="12" r="10" opacity="0.25" />
-                          <path d="M10 15.17l-3.59-3.58L5 13l5 5 9-9-1.41-1.42L10 15.17z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" className="mt-0.5 shrink-0" aria-hidden="true">
+                          <circle cx="12" cy="12" r="10" fill="#5de6fc" />
+                          <path d="M10 15.17l-3.59-3.58L5 13l5 5 9-9-1.41-1.42L10 15.17z" fill="#001138" />
                         </svg>
                         {skill}
                       </li>
