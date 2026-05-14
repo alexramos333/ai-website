@@ -88,9 +88,16 @@ const teamMembers: TeamMember[] = [
     role: "Full-Stack AI Software Developer",
     icon: (
       <svg {...iconProps} viewBox="0 0 24 24">
-        <path d="M12 2a6 6 0 0 1 6 6c0 2.5-1.5 4.5-3.5 5.5C16.5 14.5 18 16 18 18v2H6v-2c0-2 1.5-3.5 3.5-4.5C7.5 12.5 6 10.5 6 8a6 6 0 0 1 6-6z" />
-        <path d="M9 8c0-1 .5-2 1.5-2.5M15 8c0-1-.5-2-1.5-2.5" />
-        <path d="M8 22v-2M16 22v-2" />
+        {/* Terminal window */}
+        <rect x="2" y="3" width="20" height="18" rx="2" />
+        <path d="M2 7h20" />
+        {/* Code brackets */}
+        <path d="M6 11l-2 2.5L6 16" />
+        <path d="M18 11l2 2.5L18 16" />
+        {/* AI brain circuit in center */}
+        <circle cx="12" cy="13.5" r="2.5" />
+        <path d="M12 11v-1M12 16v1M9.5 13.5H8.5M15.5 13.5h-1" />
+        <circle cx="12" cy="13.5" r="0.75" fill="currentColor" />
       </svg>
     ),
   },
@@ -111,13 +118,22 @@ const teamMembers: TeamMember[] = [
     role: "AI Agent Expert",
     icon: (
       <svg {...iconProps} viewBox="0 0 24 24">
-        <circle cx="12" cy="8" r="5" />
-        <path d="M12 3v0" />
-        <path d="M9.5 6.5L10.5 7.5" />
-        <path d="M14.5 6.5L13.5 7.5" />
-        <circle cx="12" cy="8" r="1" fill="currentColor" />
-        <path d="M7 13c-2 1-3 3-3 5v2h16v-2c0-2-1-4-3-5" />
-        <path d="M8 8h-.5a1 1 0 0 1 0-2H8M16 8h.5a1 1 0 0 0 0-2H16" />
+        {/* Robot head */}
+        <rect x="5" y="6" width="14" height="11" rx="3" />
+        {/* Eyes */}
+        <circle cx="9.5" cy="11" r="1.5" />
+        <circle cx="14.5" cy="11" r="1.5" />
+        <circle cx="9.5" cy="11" r="0.5" fill="currentColor" />
+        <circle cx="14.5" cy="11" r="0.5" fill="currentColor" />
+        {/* Mouth */}
+        <path d="M9 14.5h6" />
+        {/* Antenna */}
+        <path d="M12 6V3" />
+        <circle cx="12" cy="2" r="1" fill="currentColor" />
+        {/* Signal waves */}
+        <path d="M8 3.5C9 2.5 10.5 2 12 2s3 .5 4 1.5" />
+        {/* Ears */}
+        <path d="M5 10H3v3h2M19 10h2v3h-2" />
       </svg>
     ),
   },
