@@ -29,18 +29,17 @@ export default function SectionHeading({
 
   return (
     <div className={`${textAlign} ${className}`}>
-      <h2
-        className="font-black text-white text-glow"
-        style={{ fontSize: "clamp(1.4rem, 4vw, 2.5rem)" }}
-      >
-        {children}
-      </h2>
-      {subtitle && (
-        <p className="mt-4 text-lg text-white/75">{subtitle}</p>
-      )}
-      <div
-        className={`mt-4 h-1 w-16 rounded-full bg-gradient-to-r ${accentMap[accentColor]} ${alignMap[align]}`}
-      />
+      <div className="glass-card px-6 py-6">
+        <h2
+          className="font-black text-white text-glow"
+          style={{ fontSize: "clamp(1.4rem, 4vw, 2.5rem)" }}
+        >
+          {children}
+        </h2>
+        <div
+          className={`mt-4 h-[3px] w-full rounded-full bg-gradient-to-r ${accentMap[accentColor]}`}
+        />
+      </div>
     </div>
   );
 }
