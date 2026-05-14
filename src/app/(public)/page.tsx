@@ -585,7 +585,7 @@ export default function HomePage() {
                   <h3 className="text-xl font-black">Email Address</h3>
                 </div>
                 <div className="mt-2 border-b border-[#5de6fc]" />
-                <p className="mt-4 text-xl font-black sm:text-2xl">alexramos300@gmail.com</p>
+                <a href="mailto:alexramos300@gmail.com" className="mt-4 block text-xl font-black sm:text-2xl hover:text-[#5de6fc] transition-colors">alexramos300@gmail.com</a>
               </GlassCard>
 
               <GlassCard>
