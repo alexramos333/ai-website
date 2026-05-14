@@ -27,6 +27,9 @@ const caseStudies: CaseStudy[] = [
   { stat: "32% Decrease In Average Cost Per Lead Over 8 Months Across 40+ Locations", detail: "" },
   { stat: "280% Increase In Total Leads In 30 Days", detail: "" },
   { stat: "92% Decrease In Cost Per Lead In 30 Days", detail: "" },
+  { stat: "100% Increase In Annual Sales For Local Business", detail: "" },
+  { stat: "20% Increase In Annual Sales For Large Car Dealership", detail: "" },
+  { stat: "3.57X ROI In 30 Days For Ecommerce Brand", detail: "" },
 ];
 
 interface PortfolioItem {
