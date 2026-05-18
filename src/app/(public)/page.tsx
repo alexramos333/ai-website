@@ -540,7 +540,8 @@ export default function HomePage() {
             <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {skillCategories.map((category) => (
                 <AnimatedGlassCard key={category.title}>
-                  <h3 className="border-b-[2px] border-[#5de6fc] rounded-full pb-2 text-xl font-black">{category.title}</h3>
+                  <h3 className="pb-2 text-xl font-black">{category.title}</h3>
+                  <div className="mt-0 border-b-[2px] border-[#5de6fc]" />
                   <ul className="mt-4 space-y-2">
                     {category.skills.map((skill) => (
                       <li key={skill} className="flex items-start gap-2 text-sm font-bold text-white">
