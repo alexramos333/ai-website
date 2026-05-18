@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import SceneWrapper from "@/components/effects/SceneWrapper";
@@ -36,6 +37,7 @@ interface PortfolioItem {
   title: string;
   subtitle: string;
   description: string;
+  href: string;
 }
 
 const portfolioItems: PortfolioItem[] = [
@@ -43,31 +45,37 @@ const portfolioItems: PortfolioItem[] = [
     title: "Content Creation Software",
     subtitle: "AI Software Demo",
     description: "Generate scroll-stopping social media posts, captions, and scripts in seconds with AI-powered content tools.",
+    href: "/content-creator",
   },
   {
     title: "Google Ads Software",
     subtitle: "AI Software Demo",
     description: "Build high-converting Google Ads campaigns with AI-optimized headlines, descriptions, and keyword targeting.",
+    href: "/google-ads",
   },
   {
     title: "Facebook Ads Software",
     subtitle: "AI Software Demo",
     description: "Create ready-to-launch Facebook ad copy and audience targeting strategies powered by AI in minutes.",
+    href: "/facebook-ads",
   },
   {
     title: "TikTok Shop Software",
     subtitle: "AI Software Demo",
     description: "Generate TikTok Shop product listings and viral ad scripts designed to maximize conversions and sales.",
+    href: "/tiktok-shop",
   },
   {
     title: "AI Prompt Generator Software",
     subtitle: "AI Software Demo",
     description: "Craft precision-engineered prompts for any AI model to get better, more consistent results every time.",
+    href: "/portfolio/ai-prompt-generator",
   },
   {
     title: "AI Email Generator Software",
     subtitle: "AI Software Demo",
     description: "Build complete email sequences and campaigns with AI-written subject lines, body copy, and CTAs.",
+    href: "/portfolio/ai-email-generator",
   },
 ];
 
@@ -491,11 +499,11 @@ export default function HomePage() {
                       <path d="M8 5v14l11-7z" />
                     </svg>
                   </div>
-                  <p className="mt-3">
-                    <span className="cta-btn-static inline-block">
+                  <div className="mt-3">
+                    <Link href={item.href} className="cta-btn-static inline-block">
                       <span className="cta-btn-inside block px-3 py-1.5 text-sm">View Software Demo</span>
-                    </span>
-                  </p>
+                    </Link>
+                  </div>
                 </AnimatedGlassCard>
               ))}
             </div>
