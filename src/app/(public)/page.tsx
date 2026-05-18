@@ -34,33 +34,40 @@ const caseStudies: CaseStudy[] = [
 
 interface PortfolioItem {
   title: string;
+  subtitle: string;
   description: string;
 }
 
 const portfolioItems: PortfolioItem[] = [
   {
-    title: "AI Agent Software Automation",
-    description: "Intelligent agent automating customer support workflows",
+    title: "Content Creation Software",
+    subtitle: "AI Software Demo",
+    description: "Generate scroll-stopping social media posts, captions, and scripts in seconds with AI-powered content tools.",
   },
   {
-    title: "AI Agent Software Automation",
-    description: "Predictive analytics dashboard for sales forecasting",
+    title: "Google Ads Software",
+    subtitle: "AI Software Demo",
+    description: "Build high-converting Google Ads campaigns with AI-optimized headlines, descriptions, and keyword targeting.",
   },
   {
-    title: "AI Agent Software Automation",
-    description: "Automated content generation and publishing pipeline",
+    title: "Facebook Ads Software",
+    subtitle: "AI Software Demo",
+    description: "Create ready-to-launch Facebook ad copy and audience targeting strategies powered by AI in minutes.",
   },
   {
-    title: "AI Agent Software Automation",
-    description: "Smart inventory management with demand prediction",
+    title: "TikTok Shop Software",
+    subtitle: "AI Software Demo",
+    description: "Generate TikTok Shop product listings and viral ad scripts designed to maximize conversions and sales.",
   },
   {
-    title: "AI Agent Software Automation",
-    description: "AI-powered lead scoring and qualification system",
+    title: "AI Prompt Generator Software",
+    subtitle: "AI Software Demo",
+    description: "Craft precision-engineered prompts for any AI model to get better, more consistent results every time.",
   },
   {
-    title: "AI Agent Software Automation",
-    description: "Real-time sentiment analysis for brand monitoring",
+    title: "AI Email Generator Software",
+    subtitle: "AI Software Demo",
+    description: "Build complete email sequences and campaigns with AI-written subject lines, body copy, and CTAs.",
   },
 ];
 
@@ -466,7 +473,8 @@ export default function HomePage() {
               {portfolioItems.map((item, i) => (
                 <AnimatedGlassCard key={i}>
                   <p className="text-lg font-black">{item.title}</p>
-                  <p className="mt-1 text-sm text-white/75">
+                  <p className="mt-1 text-sm font-bold text-[#5de6fc]">{item.subtitle}</p>
+                  <p className="mt-2 text-sm text-white/75">
                     {item.description}
                   </p>
                   {/* Video placeholder */}
