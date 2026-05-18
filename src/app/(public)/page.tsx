@@ -491,8 +491,10 @@ export default function HomePage() {
                       <path d="M8 5v14l11-7z" />
                     </svg>
                   </div>
-                  <p className="mt-3 text-sm text-[#3399FF]">
-                    View Full Screen &rarr;
+                  <p className="mt-3">
+                    <span className="cta-btn-static inline-block">
+                      <span className="cta-btn-inside block px-3 py-1.5 text-sm">View Software Demo</span>
+                    </span>
                   </p>
                 </AnimatedGlassCard>
               ))}
