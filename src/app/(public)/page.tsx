@@ -55,6 +55,7 @@ const portfolioItems: PortfolioItem[] = [
     subtitle: "AI Software Demo",
     description: "Build high-converting Google Ads campaigns with AI-optimized headlines, descriptions, and keyword targeting.",
     href: "/google-ads",
+    image: "/images/google-ads-software.webp",
   },
   {
     title: "Facebook Ads Software",
