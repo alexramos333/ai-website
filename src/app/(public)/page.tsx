@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import SceneWrapper from "@/components/effects/SceneWrapper";
@@ -38,6 +39,7 @@ interface PortfolioItem {
   subtitle: string;
   description: string;
   href: string;
+  image?: string;
 }
 
 const portfolioItems: PortfolioItem[] = [
@@ -46,6 +48,7 @@ const portfolioItems: PortfolioItem[] = [
     subtitle: "AI Software Demo",
     description: "Generate scroll-stopping social media posts, captions, and scripts in seconds with AI-powered content tools.",
     href: "/content-creator",
+    image: "/images/content-creation-software.webp",
   },
   {
     title: "Google Ads Software",
@@ -485,20 +488,32 @@ export default function HomePage() {
                   <p className="mt-2 text-sm text-white/75">
                     {item.description}
                   </p>
-                  {/* Video placeholder */}
-                  <div className="relative mt-4 flex aspect-video items-center justify-center rounded-lg bg-white/10">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="48"
-                      height="48"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      className="text-white/60"
-                      aria-hidden="true"
-                    >
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </div>
+                  {/* Thumbnail */}
+                  {item.image ? (
+                    <div className="relative mt-4 aspect-video overflow-hidden rounded-lg">
+                      <Image
+                        src={item.image}
+                        alt={item.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      />
+                    </div>
+                  ) : (
+                    <div className="relative mt-4 flex aspect-video items-center justify-center rounded-lg bg-white/10">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="48"
+                        height="48"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        className="text-white/60"
+                        aria-hidden="true"
+                      >
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </div>
+                  )}
                   <div className="mt-3">
                     <Link href={item.href} className="cta-btn-static inline-block">
                       <span className="cta-btn-inside block px-3 py-1.5 text-sm">View Software Demo</span>
