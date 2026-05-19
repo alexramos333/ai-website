@@ -7,6 +7,8 @@ interface CTALinkProps {
   variant?: "primary" | "secondary";
   className?: string;
   size?: "sm" | "md" | "lg";
+  target?: string;
+  rel?: string;
   "aria-label": string;
 }
 
@@ -22,6 +24,8 @@ export default function CTALink({
   variant = "primary",
   className = "",
   size = "md",
+  target,
+  rel,
   "aria-label": ariaLabel,
 }: CTALinkProps) {
   const variantClass = variant === "secondary" ? "opacity-80" : "";
@@ -31,6 +35,8 @@ export default function CTALink({
       href={href}
       className={`cta-btn cta-in-view inline-block ${className}`}
       aria-label={ariaLabel}
+      {...(target && { target })}
+      {...(rel && { rel })}
     >
       <span className={`cta-btn-inside block ${sizeMap[size]} ${variantClass}`}>
         {children}

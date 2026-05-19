@@ -645,7 +645,7 @@ export default function HomePage() {
                 </div>
                 <div className="mt-2 border-b-[2px] border-[#5de6fc] rounded-full" />
                 <div className="mt-4">
-                  <CTALink href="https://www.linkedin.com/in/alex-r-a330a7137/" size="sm" aria-label="View LinkedIn profile">
+                  <CTALink href="https://www.linkedin.com/in/alex-r-a330a7137/" size="sm" target="_blank" rel="noopener noreferrer" aria-label="View LinkedIn profile">
                     VIEW NOW
                   </CTALink>
                 </div>

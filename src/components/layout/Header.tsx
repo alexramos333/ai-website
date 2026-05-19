@@ -13,11 +13,12 @@ interface NavLink {
   label: string;
   href: string;
   children?: NavChild[];
+  external?: boolean;
 }
 
 const navLinks: NavLink[] = [
   { label: "Home", href: "/" },
-  { label: "Services", href: "/services" },
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/alex-r-a330a7137/", external: true },
   { label: "Free Course", href: "/free-course" },
   {
     label: "Portfolio",
@@ -124,6 +125,16 @@ export default function Header({ user = null }: HeaderProps) {
                   </div>
                 )}
               </div>
+            ) : link.external ? (
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-medium text-white/75 transition-colors hover:text-white"
+              >
+                {link.label}
+              </a>
             ) : (
               <Link
                 key={link.href}
@@ -171,13 +182,25 @@ export default function Header({ user = null }: HeaderProps) {
         <div className="border-t border-white/10 bg-[#001138]/95 px-6 py-4">
           {navLinks.map((link) => (
             <div key={link.href}>
-              <Link
-                href={link.href}
-                className="block py-3 text-white/75 transition-colors hover:text-white"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {link.label}
-              </Link>
+              {link.external ? (
+                <a
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block py-3 text-white/75 transition-colors hover:text-white"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {link.label}
+                </a>
+              ) : (
+                <Link
+                  href={link.href}
+                  className="block py-3 text-white/75 transition-colors hover:text-white"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              )}
               {link.children?.map((child) => (
                 <Link
                   key={child.href}
