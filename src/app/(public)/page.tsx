@@ -489,7 +489,7 @@ export default function HomePage() {
         </SceneWrapper>
 
         {/* ════ PORTFOLIO ════ */}
-        <section className="section-padding relative z-30">
+        <section className="section-padding relative z-30 max-md:!pt-0">
           <div className="mx-auto max-w-7xl">
             <SectionHeading subtitle="AI-powered tools built for real businesses">
               VIEW MY PORTFOLIO
