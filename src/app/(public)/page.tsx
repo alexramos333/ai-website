@@ -423,7 +423,7 @@ export default function HomePage() {
       <main>
         {/* ════ HERO ════ */}
         <SceneWrapper>
-          <section className="flex min-h-[100svh] flex-col items-center justify-center px-4 pt-12 md:pt-16">
+          <section className="flex min-h-[100dvh] flex-col items-center justify-center px-4 pt-12 md:pt-16">
             <GlassCard padding="md" className="max-w-4xl text-center md:p-10">
               <span className="inline-block rounded-full bg-white/10 px-4 py-1.5 text-sm text-white/75">
                 AI Engineer | Data Engineer | Full-Stack Software Developer
