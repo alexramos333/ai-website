@@ -457,6 +457,19 @@ export default function HomePage() {
                   View Portfolio
                 </CTALink>
               </div>
+              {/* Video */}
+              <div className="mx-auto mt-10 w-full max-w-3xl rounded-xl border-2 border-[#5de6fc] overflow-hidden">
+                <div className="relative h-0" style={{ paddingBottom: "56.25%" }}>
+                  <iframe
+                    className="absolute left-0 top-0 h-full w-full"
+                    src="https://videos.sproutvideo.com/embed/489bdeb41b10eec3c2/2858162633803e3d"
+                    frameBorder="0"
+                    allowFullScreen
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="Video Player"
+                  />
+                </div>
+              </div>
             </GlassCard>
 
             {/* Scroll indicator */}
