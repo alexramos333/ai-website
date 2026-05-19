@@ -5,7 +5,7 @@ import "@/styles/globals.css";
 const montserrat = Montserrat({
   subsets: ["latin"],
   weight: ["400", "900"],
-  display: "optional",
+  display: "swap",
   variable: "--font-montserrat",
   adjustFontFallback: true,
 });
@@ -35,7 +35,7 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href={`https://${process.env.NEXT_PUBLIC_SUPABASE_PROJECT_ID}.supabase.co`} />
       </head>
-      <body className="min-h-[100dvh] bg-[#001138] font-sans text-white antialiased">
+      <body className="min-h-screen bg-[#001138] font-sans text-white antialiased">
         {children}
       </body>
     </html>

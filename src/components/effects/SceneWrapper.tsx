@@ -6,7 +6,7 @@ interface SceneWrapperProps {
 
 export default function SceneWrapper({ children }: SceneWrapperProps) {
   return (
-    <div className="relative min-h-[100dvh] overflow-hidden">
+    <div className="relative overflow-hidden" style={{ minHeight: "100dvh" }}>
       {children}
     </div>
   );
