@@ -424,29 +424,25 @@ export default function HomePage() {
         {/* ════ HERO ════ */}
         <SceneWrapper>
           <section className="flex min-h-[100svh] flex-col items-center justify-center px-4 pt-20">
-            <GlassCard padding="lg" className="max-w-3xl text-center">
+            <GlassCard padding="lg" className="max-w-4xl text-center">
               <span className="inline-block rounded-full bg-white/10 px-4 py-1.5 text-sm text-white/75">
-                AI-Powered Solutions for Modern Business
+                AI Engineer | Data Engineer | Full-Stack Software Developer
               </span>
               <h1
                 className="mt-6 font-black text-3d"
-                style={{ fontSize: "clamp(1.75rem, 5vw, 3.5rem)" }}
+                style={{ fontSize: "clamp(1.4rem, 4vw, 2.75rem)", lineHeight: 1.2 }}
               >
-                Build Smarter.
-                <br />
-                Scale Faster.
+                Full-Stack Software Developer That Specializes In Building AI Powered Software Applications
               </h1>
               <p
-                className="mx-auto mt-4 max-w-xl text-white/75"
+                className="mx-auto mt-4 max-w-2xl text-white/75"
                 style={{ fontSize: "clamp(0.9rem, 2.5vw, 1.1rem)" }}
               >
-                Full-stack AI developer and digital marketer with 8+ years of
-                experience helping businesses scale with cutting-edge automation
-                and proven strategies.
+                Whether you&apos;re looking for an AI Engineer, Data Engineer, or Full-Stack Software Developer, you came to the right place. I specialize in helping businesses use AI to Create Custom AI Software, Data Analytics Software, Data Pipelines, AI Automations, and a whole lot more. <span className="text-[#5de6fc] font-bold">Click Below To Learn More Or Call 910-619-9205.</span>
               </p>
               <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <CTALink href="/contact" className="w-full sm:w-auto" aria-label="Book a free strategy call">
-                  Book Free Strategy Call
+                <CTALink href="tel:9106199205" className="w-full sm:w-auto" aria-label="Call now">
+                  Call Now
                 </CTALink>
                 <CTALink
                   href="/portfolio"
