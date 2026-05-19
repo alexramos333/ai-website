@@ -190,7 +190,7 @@ export default function Header({ user = null }: HeaderProps) {
           isMenuOpen ? "max-h-[80vh]" : "max-h-0"
         }`}
       >
-        <div className="border-t border-white/10 bg-[#001138] px-6 py-4">
+        <div className="border-t border-white/10 bg-[#001138]/95 px-6 py-4">
           {navLinks.map((link) => (
             <div key={link.href}>
               <Link
