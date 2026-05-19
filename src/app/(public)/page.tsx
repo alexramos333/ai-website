@@ -435,7 +435,7 @@ export default function HomePage() {
                 Full-Stack Software Developer That Specializes In Building AI Powered Software Applications
               </h1>
               {/* Video */}
-              <div className="mx-auto mt-6 w-full max-w-3xl rounded-xl border-2 border-[#5de6fc] overflow-hidden">
+              <div className="mx-auto mt-[10px] md:mt-6 w-full max-w-3xl rounded-xl border-2 border-[#5de6fc] overflow-hidden">
                 <div className="relative h-0" style={{ paddingBottom: "56.25%" }}>
                   <iframe
                     className="absolute left-0 top-0 h-full w-full"
