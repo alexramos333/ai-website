@@ -448,19 +448,19 @@ export default function HomePage() {
                 </div>
               </div>
               <p
-                className="mx-auto mt-[5px] md:mt-[10px] max-w-3xl font-medium text-white"
+                className="mx-auto mt-[5px] md:mt-[10px] max-w-3xl font-semibold text-white"
                 style={{ fontSize: "clamp(0.9rem, 2.5vw, 1.1rem)" }}
               >
                 Whether you&apos;re looking for an AI Engineer, Data Engineer, or Full-Stack Software Developer, you came to the right place. I specialize in helping businesses use AI to Create Custom AI Software, Data Analytics Software, Data Pipelines, AI Automations, and a whole lot more. Click Below To Learn More Or Call 910-619-9205.
               </p>
               <div className="mt-[10px] md:mt-[10px] flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <CTALink href="tel:9106199205" className="w-full sm:w-auto" aria-label="Call now">
+                <CTALink href="tel:9106199205" className="w-full sm:w-48" aria-label="Call now">
                   Call Now
                 </CTALink>
                 <CTALink
                   href="/portfolio"
                   variant="secondary"
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-48"
                   aria-label="View portfolio"
                 >
                   View Portfolio
