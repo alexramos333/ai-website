@@ -429,13 +429,13 @@ export default function HomePage() {
                 AI Engineer | Data Engineer | Full-Stack Software Developer
               </span>
               <h1
-                className="mx-auto mt-[10px] md:mt-6 max-w-3xl font-black text-3d"
+                className="mx-auto mt-[10px] md:mt-[10px] max-w-3xl font-black text-3d"
                 style={{ fontSize: "clamp(1.1rem, 2.5vw, 1.75rem)", lineHeight: 1.3 }}
               >
                 Full-Stack Software Developer That Specializes In Building AI Powered Software Applications
               </h1>
               {/* Video */}
-              <div className="mx-auto mt-[10px] md:mt-6 w-full max-w-3xl rounded-xl border-2 border-[#5de6fc] overflow-hidden">
+              <div className="mx-auto mt-[10px] md:mt-[10px] w-full max-w-3xl rounded-xl border-2 border-[#5de6fc] overflow-hidden">
                 <div className="relative h-0" style={{ paddingBottom: "56.25%" }}>
                   <iframe
                     className="absolute left-0 top-0 h-full w-full"
@@ -448,12 +448,12 @@ export default function HomePage() {
                 </div>
               </div>
               <p
-                className="mx-auto mt-[5px] md:mt-4 max-w-3xl font-bold text-white"
+                className="mx-auto mt-[5px] md:mt-[10px] max-w-3xl font-bold text-white"
                 style={{ fontSize: "clamp(0.9rem, 2.5vw, 1.1rem)" }}
               >
                 Whether you&apos;re looking for an AI Engineer, Data Engineer, or Full-Stack Software Developer, you came to the right place. I specialize in helping businesses use AI to Create Custom AI Software, Data Analytics Software, Data Pipelines, AI Automations, and a whole lot more. <span className="text-[#5de6fc] font-bold">Click Below To Learn More Or Call 910-619-9205.</span>
               </p>
-              <div className="mt-[10px] md:mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <div className="mt-[10px] md:mt-[10px] flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <CTALink href="tel:9106199205" className="w-full sm:w-auto" aria-label="Call now">
                   Call Now
                 </CTALink>
