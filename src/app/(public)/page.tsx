@@ -76,6 +76,7 @@ const portfolioItems: PortfolioItem[] = [
     subtitle: "AI Software Demo",
     description: "Craft precision-engineered prompts for any AI model to get better, more consistent results every time.",
     href: "/portfolio/ai-prompt-generator",
+    image: "/images/ai-prompt-generator-software.webp",
   },
   {
     title: "AI Email Generator Software",
