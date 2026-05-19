@@ -557,11 +557,11 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ════ WHO WE ARE ════ */}
+        {/* ════ WHO AM I? ════ */}
         <section className="section-padding relative z-30">
           <div className="mx-auto max-w-7xl">
             <SectionHeading subtitle="A diverse team of specialists">
-              WHO WE ARE
+              WHO AM I?
             </SectionHeading>
             <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {teamMembers.map((member) => (
@@ -582,7 +582,7 @@ export default function HomePage() {
         <section className="section-padding relative z-30">
           <div className="mx-auto max-w-7xl">
             <SectionHeading subtitle="Full-stack expertise across marketing, AI, and engineering">
-              WHAT WE DO
+              SKILLS
             </SectionHeading>
             <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {skillCategories.map((category) => (
