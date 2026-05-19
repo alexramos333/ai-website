@@ -429,7 +429,7 @@ export default function HomePage() {
                 AI Engineer | Data Engineer | Full-Stack Software Developer
               </span>
               <h1
-                className="mx-auto mt-[10px] md:mt-[10px] max-w-3xl font-black text-3d"
+                className="mx-auto mt-[10px] md:mt-[10px] max-w-3xl font-black"
                 style={{ fontSize: "clamp(1.1rem, 2.5vw, 1.75rem)", lineHeight: 1.3 }}
               >
                 Full-Stack Software Developer That Specializes In Building AI Powered Software Applications
@@ -448,7 +448,7 @@ export default function HomePage() {
                 </div>
               </div>
               <p
-                className="mx-auto mt-[5px] md:mt-[10px] max-w-3xl font-normal text-white"
+                className="mx-auto mt-[5px] md:mt-[10px] max-w-3xl font-medium text-white"
                 style={{ fontSize: "clamp(0.9rem, 2.5vw, 1.1rem)" }}
               >
                 Whether you&apos;re looking for an AI Engineer, Data Engineer, or Full-Stack Software Developer, you came to the right place. I specialize in helping businesses use AI to Create Custom AI Software, Data Analytics Software, Data Pipelines, AI Automations, and a whole lot more. Click Below To Learn More Or Call 910-619-9205.
