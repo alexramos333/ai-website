@@ -75,7 +75,7 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["sharp"],
 
   experimental: {
-    optimizeCss: true,
+    inlineCss: true,
   },
 
   compiler: {
