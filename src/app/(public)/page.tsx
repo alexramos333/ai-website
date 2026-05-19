@@ -539,6 +539,24 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* ════ CASE STUDIES ════ */}
+        <section className="section-padding relative z-30">
+          <div className="mx-auto max-w-7xl">
+            <SectionHeading subtitle="Real results from real campaigns">
+              DIGITAL MARKETING CASE STUDIES
+            </SectionHeading>
+            <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {caseStudies.map((study) => (
+                <AnimatedGlassCard key={study.stat}>
+                  <p className="text-lg font-black">Case Study</p>
+                  <div className="mt-2 border-b-[2px] border-[#5de6fc] rounded-full" />
+                  <p className="mt-4 text-2xl font-black">{study.stat}</p>
+                </AnimatedGlassCard>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* ════ WHO WE ARE ════ */}
         <section className="section-padding relative z-30">
           <div className="mx-auto max-w-7xl">
@@ -582,24 +600,6 @@ export default function HomePage() {
                       </li>
                     ))}
                   </ul>
-                </AnimatedGlassCard>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ════ CASE STUDIES ════ */}
-        <section className="section-padding relative z-30">
-          <div className="mx-auto max-w-7xl">
-            <SectionHeading subtitle="Real results from real campaigns">
-              DIGITAL MARKETING CASE STUDIES
-            </SectionHeading>
-            <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {caseStudies.map((study) => (
-                <AnimatedGlassCard key={study.stat}>
-                  <p className="text-lg font-black">Case Study</p>
-                  <div className="mt-2 border-b-[2px] border-[#5de6fc] rounded-full" />
-                  <p className="mt-4 text-2xl font-black">{study.stat}</p>
                 </AnimatedGlassCard>
               ))}
             </div>
