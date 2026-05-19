@@ -14,12 +14,13 @@ interface NavLink {
   href: string;
   children?: NavChild[];
   external?: boolean;
+  hidden?: boolean;
 }
 
 const navLinks: NavLink[] = [
   { label: "Home", href: "/" },
   { label: "LinkedIn", href: "https://www.linkedin.com/in/alex-r-a330a7137/", external: true },
-  { label: "Free Course", href: "/free-course" },
+  { label: "Free Course", href: "/free-course", hidden: true },
   {
     label: "Portfolio",
     href: "/portfolio",
@@ -79,7 +80,7 @@ export default function Header({ user = null }: HeaderProps) {
 
         {/* Desktop nav */}
         <div className="hidden items-center gap-8 md:flex">
-          {navLinks.map((link) =>
+          {navLinks.filter((l) => !l.hidden).map((link) =>
             link.children ? (
               <div
                 key={link.href}
@@ -89,7 +90,7 @@ export default function Header({ user = null }: HeaderProps) {
               >
                 <Link
                   href={link.href}
-                  className="text-sm font-medium text-white/75 transition-colors hover:text-white"
+                  className="text-sm font-medium text-white/75 transition-colors hover:text-[#5de6fc]"
                 >
                   {link.label}
                   <svg
@@ -115,7 +116,7 @@ export default function Header({ user = null }: HeaderProps) {
                         <Link
                           key={child.href}
                           href={child.href}
-                          className="block px-4 py-2 text-sm text-white/75 transition-colors hover:bg-white/10 hover:text-white"
+                          className="block px-4 py-2 text-sm text-white/75 transition-colors hover:bg-white/10 hover:text-[#5de6fc]"
                           onClick={closeDropdown}
                         >
                           {child.label}
@@ -131,7 +132,7 @@ export default function Header({ user = null }: HeaderProps) {
                 href={link.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm font-medium text-white/75 transition-colors hover:text-white"
+                className="text-sm font-medium text-white/75 transition-colors hover:text-[#5de6fc]"
               >
                 {link.label}
               </a>
@@ -139,7 +140,7 @@ export default function Header({ user = null }: HeaderProps) {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-white/75 transition-colors hover:text-white"
+                className="text-sm font-medium text-white/75 transition-colors hover:text-[#5de6fc]"
               >
                 {link.label}
               </Link>
@@ -180,14 +181,14 @@ export default function Header({ user = null }: HeaderProps) {
         }`}
       >
         <div className="border-t border-white/10 bg-[#001138]/95 px-6 py-4">
-          {navLinks.map((link) => (
+          {navLinks.filter((l) => !l.hidden).map((link) => (
             <div key={link.href}>
               {link.external ? (
                 <a
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block py-3 text-white/75 transition-colors hover:text-white"
+                  className="block py-3 text-white/75 transition-colors hover:text-[#5de6fc]"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {link.label}
@@ -195,7 +196,7 @@ export default function Header({ user = null }: HeaderProps) {
               ) : (
                 <Link
                   href={link.href}
-                  className="block py-3 text-white/75 transition-colors hover:text-white"
+                  className="block py-3 text-white/75 transition-colors hover:text-[#5de6fc]"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {link.label}
@@ -205,7 +206,7 @@ export default function Header({ user = null }: HeaderProps) {
                 <Link
                   key={child.href}
                   href={child.href}
-                  className="block py-2 pl-4 text-sm text-white/60 transition-colors hover:text-white"
+                  className="block py-2 pl-4 text-sm text-white/60 transition-colors hover:text-[#5de6fc]"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {child.label}
