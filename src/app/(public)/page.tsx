@@ -430,7 +430,7 @@ export default function HomePage() {
               </span>
               <h1
                 className="mt-6 font-black text-3d"
-                style={{ fontSize: "clamp(1.4rem, 4vw, 2.75rem)", lineHeight: 1.2 }}
+                style={{ fontSize: "clamp(1.2rem, 3vw, 2rem)", lineHeight: 1.3 }}
               >
                 Full-Stack Software Developer That Specializes In Building AI Powered Software Applications
               </h1>
