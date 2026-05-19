@@ -469,7 +469,7 @@ export default function HomePage() {
             </GlassCard>
 
             {/* Scroll indicator */}
-            <div className="absolute bottom-8 animate-bounce text-white/50">
+            <div className="mt-6 animate-bounce text-white/50">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
