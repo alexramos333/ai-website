@@ -423,7 +423,7 @@ export default function HomePage() {
       <main>
         {/* ════ HERO ════ */}
         <SceneWrapper>
-          <section className="px-4 pt-12 md:pt-16" style={{ minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <section className="px-4 pt-12 md:pt-16" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
             <GlassCard padding="md" className="max-w-4xl text-center md:p-10">
               <span className="inline-block rounded-full bg-white/10 px-4 py-1.5 text-sm text-white/75">
                 AI Engineer | Data Engineer | Full-Stack Software Developer
