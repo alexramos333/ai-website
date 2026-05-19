@@ -134,28 +134,6 @@ export default function Header({ user = null }: HeaderProps) {
               </Link>
             ),
           )}
-          {user ? (
-            <div className="flex items-center gap-4">
-              <Link
-                href="/dashboard"
-                className="text-sm font-medium text-white/75 transition-colors hover:text-white"
-              >
-                {user.fullName}
-              </Link>
-              <form action="/logout" method="POST">
-                <button
-                  type="submit"
-                  className="rounded-lg border border-white/20 px-3 py-1.5 text-sm font-medium text-white/75 transition-colors hover:bg-white/10 hover:text-white"
-                >
-                  Logout
-                </button>
-              </form>
-            </div>
-          ) : (
-            <CTAButton href="/login" size="sm" aria-label="Log in to your account">
-              Login
-            </CTAButton>
-          )}
         </div>
 
         {/* Hamburger */}
@@ -212,31 +190,6 @@ export default function Header({ user = null }: HeaderProps) {
               ))}
             </div>
           ))}
-          <div className="pt-3">
-            {user ? (
-              <div className="flex items-center justify-between">
-                <Link
-                  href="/dashboard"
-                  className="text-sm font-medium text-white/75 transition-colors hover:text-white"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {user.fullName}
-                </Link>
-                <form action="/logout" method="POST">
-                  <button
-                    type="submit"
-                    className="rounded-lg border border-white/20 px-3 py-1.5 text-sm font-medium text-white/75 transition-colors hover:bg-white/10 hover:text-white"
-                  >
-                    Logout
-                  </button>
-                </form>
-              </div>
-            ) : (
-              <CTAButton href="/login" size="sm" aria-label="Log in to your account">
-                Login
-              </CTAButton>
-            )}
-          </div>
         </div>
       </div>
     </header>
