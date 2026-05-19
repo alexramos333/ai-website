@@ -607,7 +607,7 @@ export default function HomePage() {
         </section>
 
         {/* ════ CONTACT ════ */}
-        <section className="section-padding relative z-30">
+        <section id="contact" className="scroll-mt-20 section-padding relative z-30">
           <div className="mx-auto max-w-7xl">
             <SectionHeading subtitle="Let&apos;s build something amazing together">
               HOW TO CONTACT US
