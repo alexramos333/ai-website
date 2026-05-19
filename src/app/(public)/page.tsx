@@ -448,7 +448,7 @@ export default function HomePage() {
                 </div>
               </div>
               <p
-                className="mx-auto mt-4 max-w-3xl text-white/75"
+                className="mx-auto mt-[5px] md:mt-4 max-w-3xl text-white/75"
                 style={{ fontSize: "clamp(0.9rem, 2.5vw, 1.1rem)" }}
               >
                 Whether you&apos;re looking for an AI Engineer, Data Engineer, or Full-Stack Software Developer, you came to the right place. I specialize in helping businesses use AI to Create Custom AI Software, Data Analytics Software, Data Pipelines, AI Automations, and a whole lot more. <span className="text-[#5de6fc] font-bold">Click Below To Learn More Or Call 910-619-9205.</span>
