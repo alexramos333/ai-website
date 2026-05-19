@@ -83,6 +83,7 @@ const portfolioItems: PortfolioItem[] = [
     subtitle: "AI Software Demo",
     description: "Build complete email sequences and campaigns with AI-written subject lines, body copy, and CTAs.",
     href: "/portfolio/ai-email-generator",
+    image: "/images/ai-email-generator-software.webp",
   },
 ];
 
