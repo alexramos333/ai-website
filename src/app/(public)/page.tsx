@@ -62,6 +62,7 @@ const portfolioItems: PortfolioItem[] = [
     subtitle: "AI Software Demo",
     description: "Create ready-to-launch Facebook ad copy and audience targeting strategies powered by AI in minutes.",
     href: "/facebook-ads",
+    image: "/images/facebook-ads-software.webp",
   },
   {
     title: "TikTok Shop Software",
