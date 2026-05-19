@@ -186,11 +186,11 @@ export default function Header({ user = null }: HeaderProps) {
 
       {/* Mobile menu */}
       <div
-        className={`overflow-hidden transition-all duration-300 md:hidden ${
-          isMenuOpen ? "max-h-96" : "max-h-0"
+        className={`overflow-y-auto transition-all duration-300 md:hidden ${
+          isMenuOpen ? "max-h-[80vh]" : "max-h-0"
         }`}
       >
-        <div className="border-t border-white/10 bg-[#001138]/95 px-6 py-4">
+        <div className="border-t border-white/10 bg-[#001138] px-6 py-4">
           {navLinks.map((link) => (
             <div key={link.href}>
               <Link
