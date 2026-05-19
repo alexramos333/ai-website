@@ -22,7 +22,7 @@ const securityHeaders = [
   },
   {
     key: "Referrer-Policy",
-    value: "strict-origin-when-cross-origin",
+    value: "no-referrer-when-downgrade",
   },
   {
     key: "Strict-Transport-Security",
@@ -42,7 +42,7 @@ const securityHeaders = [
       "img-src 'self' data: blob: https://*.supabase.co https://img.youtube.com",
       "media-src 'self' blob:",
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
-      "frame-src https://www.youtube.com https://www.youtube-nocookie.com",
+      "frame-src https://www.youtube.com https://www.youtube-nocookie.com https://videos.sproutvideo.com",
       "frame-ancestors 'none'",
     ].join("; "),
   },
