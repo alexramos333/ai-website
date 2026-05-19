@@ -69,6 +69,7 @@ const portfolioItems: PortfolioItem[] = [
     subtitle: "AI Software Demo",
     description: "Generate TikTok Shop product listings and viral ad scripts designed to maximize conversions and sales.",
     href: "/tiktok-shop",
+    image: "/images/tiktok-shop-software.webp",
   },
   {
     title: "AI Prompt Generator Software",
