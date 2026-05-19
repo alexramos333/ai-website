@@ -448,8 +448,7 @@ export default function HomePage() {
                 </div>
               </div>
               <p
-                className="mx-auto mt-[5px] md:mt-[10px] max-w-3xl font-semibold text-white"
-                style={{ fontSize: "clamp(0.9rem, 2.5vw, 1.1rem)" }}
+                className="mx-auto mt-[5px] md:mt-[10px] max-w-3xl font-semibold text-white text-[clamp(0.9rem,2.5vw,1.1rem)] md:text-[16px]"
               >
                 Looking for an AI Engineer, Data Engineer, or Full-Stack Developer? I specialize in helping businesses leverage AI to build Custom Software, Data Analytics, Data Pipelines, Automations, and more. Click Below To Learn More Or Call 910-619-9205.
               </p>
