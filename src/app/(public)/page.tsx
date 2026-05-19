@@ -451,7 +451,7 @@ export default function HomePage() {
                 className="mx-auto mt-[5px] md:mt-[10px] max-w-3xl font-semibold text-white"
                 style={{ fontSize: "clamp(0.9rem, 2.5vw, 1.1rem)" }}
               >
-                Whether you&apos;re looking for an AI Engineer, Data Engineer, or Full-Stack Software Developer, you came to the right place. I specialize in helping businesses use AI to Create Custom AI Software, Data Analytics Software, Data Pipelines, AI Automations, and a whole lot more. Click Below To Learn More Or Call 910-619-9205.
+                Looking for an AI Engineer, Data Engineer, or Full-Stack Developer? I specialize in helping businesses leverage AI to build Custom Software, Data Analytics, Data Pipelines, Automations, and more. Click Below To Learn More Or Call 910-619-9205.
               </p>
               <div className="mt-[10px] md:mt-[10px] flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <CTALink href="tel:9106199205" className="w-full sm:w-48" aria-label="Call now">
