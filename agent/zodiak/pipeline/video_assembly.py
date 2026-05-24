@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import json
+import time
+from pathlib import Path
 from typing import Any
+from urllib.parse import quote, urlencode, urlparse, urlunparse
 
 from zodiak.clients.shotstack_client import ShotstackClient
 from zodiak.logger import get_logger
@@ -15,6 +19,20 @@ OUTPUT_WIDTH = 1080
 OUTPUT_HEIGHT = 1920
 FPS = 30
 FADE_DURATION = 0.3
+
+
+def _encode_url(url: str) -> str:
+    """Percent-encode spaces and special chars in the URL path.
+
+    Also adds a cache-busting query param to bypass CDN caching
+    (ensures Shotstack fetches the latest version from R2).
+    """
+    parsed = urlparse(url)
+    encoded_path = quote(parsed.path, safe="/")
+    # Add cache-busting param to bypass CDN cached HEVC versions
+    cache_bust = urlencode({"v": int(time.time())})
+    new_query = f"{parsed.query}&{cache_bust}" if parsed.query else cache_bust
+    return urlunparse(parsed._replace(path=encoded_path, query=new_query))
 
 
 def build_edit(
@@ -41,8 +59,9 @@ def build_edit(
             {
                 "asset": {
                     "type": "video",
-                    "src": clip["r2_url"],
+                    "src": _encode_url(clip["r2_url"]),
                     "trim": 0,
+                    "transcode": True,
                 },
                 "start": offset,
                 "length": clip["clip_duration"],
@@ -57,46 +76,45 @@ def build_edit(
 
     # ── Track 2: Voiceover audio ────────────────────────────────
     audio_clip = {
+        "alias": "voiceover",
         "asset": {
             "type": "audio",
-            "src": voiceover_url,
+            "src": _encode_url(voiceover_url),
         },
         "start": 0,
         "length": total_duration,
     }
 
     # ── Track 3: Rich Captions ──────────────────────────────────
-    caption_text = " ".join(caption_words)
     caption_clip = {
         "asset": {
             "type": "caption",
-            "src": voiceover_url,
-            "display": "word",
+            "src": "alias://voiceover",
             "font": {
-                "family": "Montserrat",
-                "weight": 800,
+                "family": "Montserrat ExtraBold",
                 "size": 42,
                 "color": "#ffffff",
-                "stroke": {
-                    "color": "#000000",
-                    "width": 2,
-                },
-                "highlight": {
-                    "color": "#FFD700",
-                },
             },
-            "position": "bottom",
-            "margin": {"bottom": 0.15},
+            "background": {
+                "color": "#000000",
+                "padding": 8,
+                "borderRadius": 4,
+                "opacity": 0.6,
+            },
         },
         "start": 0,
         "length": total_duration,
+        "position": "bottom",
+        "offset": {
+            "y": -0.15,
+        },
     }
 
     # ── Assemble the edit ───────────────────────────────────────
     edit = {
         "timeline": {
             "tracks": [
-                {"clips": [caption_clip]},  # Top layer: captions
+                {"clips": [caption_clip]},  # Top: captions
                 {"clips": [audio_clip]},  # Middle: audio
                 {"clips": video_clips},  # Bottom: b-roll
             ],
@@ -145,6 +163,11 @@ def assemble_video(
         caption_words=caption_words,
         total_duration=total_duration,
     )
+
+    # Dump edit JSON to file for debugging
+    debug_path = Path(f"/tmp/shotstack-edit-{slug}.json")
+    debug_path.write_text(json.dumps(edit, indent=2))
+    log.info("edit_json_saved", path=str(debug_path))
 
     # Submit and wait for render
     shotstack_url = shotstack.render_and_wait(edit)

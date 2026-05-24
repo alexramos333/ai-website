@@ -7,6 +7,12 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: ANALYZE === "true",
 });
 
+// R2 public URL — check both naming conventions
+const r2PublicUrl =
+  process.env.NEXT_PUBLIC_R2_PUBLIC_URL ??
+  process.env.R2_PUBLIC_URL ??
+  "";
+
 const securityHeaders = [
   {
     key: "X-Frame-Options",
@@ -39,8 +45,8 @@ const securityHeaders = [
       "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",
       "font-src 'self'",
-      `img-src 'self' data: blob: https://*.supabase.co https://img.youtube.com ${process.env.NEXT_PUBLIC_R2_PUBLIC_URL ?? ""}`,
-      `media-src 'self' blob: ${process.env.NEXT_PUBLIC_R2_PUBLIC_URL ?? ""}`,
+      `img-src 'self' data: blob: https://*.supabase.co https://img.youtube.com ${r2PublicUrl}`,
+      `media-src 'self' blob: ${r2PublicUrl}`,
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
       "frame-src https://www.youtube.com https://www.youtube-nocookie.com https://videos.sproutvideo.com",
       "frame-ancestors 'none'",
@@ -54,8 +60,8 @@ const supabaseHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
   : `${process.env.NEXT_PUBLIC_SUPABASE_PROJECT_ID ?? ""}.supabase.co`;
 
 // Derive R2 public hostname for image optimization (if configured)
-const r2Hostname = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
-  ? new URL(process.env.NEXT_PUBLIC_R2_PUBLIC_URL).hostname
+const r2Hostname = r2PublicUrl
+  ? new URL(r2PublicUrl).hostname
   : null;
 
 const nextConfig: NextConfig = {

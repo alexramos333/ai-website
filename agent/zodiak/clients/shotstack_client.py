@@ -39,7 +39,7 @@ class ShotstackClient:
     @retry(
         stop=stop_after_attempt(2),
         wait=wait_exponential(multiplier=2, min=5, max=30),
-        retry=retry_if_exception_type((httpx.TimeoutException, httpx.HTTPStatusError)),
+        retry=retry_if_exception_type(httpx.TimeoutException),
     )
     def submit_render(self, edit: dict[str, Any]) -> str:
         """Submit an edit for rendering. Returns the render ID."""
@@ -49,7 +49,13 @@ class ShotstackClient:
                 headers=self._headers(),
                 json=edit,
             )
-            response.raise_for_status()
+            if response.status_code >= 400:
+                log.error(
+                    "shotstack_submit_error",
+                    status=response.status_code,
+                    body=response.text[:500],
+                )
+                response.raise_for_status()
 
         data = response.json()
         render_id = data["response"]["id"]

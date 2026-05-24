@@ -40,6 +40,7 @@ def select_clips(
         return []
 
     # Assign clips to fill the target duration
+    # Use 4-6 second clips to keep total count low (max ~15 clips)
     selected: list[dict[str, Any]] = []
     remaining_duration = target_duration
 
@@ -51,15 +52,14 @@ def select_clips(
             if remaining_duration <= 0:
                 break
 
-            # Random snippet duration between 1.2 and 2.4 seconds
-            clip_duration = min(random.uniform(1.2, 2.4), remaining_duration)
+            clip_duration = min(random.uniform(4.0, 6.0), remaining_duration)
 
             selected.append(
                 {
                     "r2_url": clip["r2_url"],
                     "filename": clip["filename"],
                     "clip_duration": round(clip_duration, 2),
-                    "start_offset": 0,  # Start from beginning
+                    "start_offset": 0,
                     "tags": clip.get("tags", []),
                 }
             )

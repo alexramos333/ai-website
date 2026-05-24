@@ -179,9 +179,10 @@ class AgentDB:
         if video_duration is not None:
             data["video_duration"] = video_duration
 
-        result = self._client.table("articles").insert(data).select("id, slug").single().execute()
-        log.info("article_inserted", slug=result.data["slug"], has_video=bool(video_url))
-        return result.data
+        result = self._client.table("articles").insert(data).select("id, slug").execute()
+        row = result.data[0]
+        log.info("article_inserted", slug=row["slug"], has_video=bool(video_url))
+        return row
 
     def slug_exists(self, slug: str) -> bool:
         """Check if an article slug already exists."""
@@ -198,13 +199,14 @@ class AgentDB:
 
     def get_veo_monthly_spend(self) -> float:
         """Get total Veo spend for the current month."""
-        result = self._client.rpc(
-            "get_veo_monthly_spend", {}
-        ).execute()
-        # Fallback: query directly if RPC not available
-        if not result.data:
-            return 0.0
-        return float(result.data)
+        first_of_month = datetime.now(timezone.utc).strftime("%Y-%m-01")
+        result = (
+            self._client.table("veo_usage")
+            .select("cost_usd")
+            .gte("created_at", first_of_month)
+            .execute()
+        )
+        return sum(float(row["cost_usd"]) for row in result.data)
 
     def log_veo_usage(
         self, run_id: str, cost_usd: float, prompt: str, video_url: str | None = None

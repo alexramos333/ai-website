@@ -1,4 +1,4 @@
-"""Google Veo 3.1 Lite client for supplementary video clip generation."""
+"""Google Veo client for supplementary video clip generation via google-genai."""
 
 from __future__ import annotations
 
@@ -14,9 +14,9 @@ log = get_logger(__name__)
 
 
 class VeoClient:
-    """Generate supplementary video clips using Google Veo 3.1 Lite."""
+    """Generate supplementary video clips using Google Veo via the genai SDK."""
 
-    COST_PER_SECOND = 0.03  # $0.03/sec for Veo 3.1 Lite at 720p
+    COST_PER_SECOND = 0.03  # $0.03/sec for Veo at 720p
 
     def __init__(self, config: VeoConfig) -> None:
         self._credentials_path = config.credentials_path
@@ -43,38 +43,42 @@ class VeoClient:
         Returns MP4 bytes on success, None if generation fails or is skipped.
         """
         try:
-            from google.cloud import aiplatform
+            from google import genai
+            from google.genai import types
 
             log.info("veo_generate_start", prompt=prompt[:80], duration=duration_seconds)
 
-            # Initialize Vertex AI / Agent Platform client
-            aiplatform.init()
+            client = genai.Client()
 
-            # Use the Veo model for video generation
-            # Note: API interface may vary based on SDK version
-            model = aiplatform.GenerativeModel("veo-3.1-lite-generate-001")
-
-            response = model.generate_content(
-                contents=prompt,
-                generation_config={
-                    "video_config": {
-                        "resolution": "720p",
-                        "duration_seconds": duration_seconds,
-                        "include_audio": False,
-                    }
-                },
+            operation = client.models.generate_videos(
+                model="veo-2.0-generate-001",
+                prompt=prompt,
+                config=types.GenerateVideosConfig(
+                    number_of_videos=1,
+                    duration_seconds=duration_seconds,
+                    resolution="720p",
+                    include_audio=False,
+                ),
             )
 
-            if response and hasattr(response, "candidates"):
-                video_data = response.candidates[0].content.parts[0].inline_data.data
-                log.info("veo_generate_complete", size_bytes=len(video_data))
-                return video_data
+            # Poll until complete
+            while not operation.done:
+                log.info("veo_poll", prompt=prompt[:40])
+                time.sleep(10)
+                operation = client.operations.get(operation)
+
+            if operation.result and operation.result.generated_videos:
+                video = operation.result.generated_videos[0]
+                video_data = video.video.video_bytes
+                if video_data:
+                    log.info("veo_generate_complete", size_bytes=len(video_data))
+                    return video_data
 
             log.warning("veo_generate_empty", prompt=prompt[:80])
             return None
 
         except ImportError:
-            log.warning("veo_import_error", msg="google-cloud-aiplatform not installed")
+            log.warning("veo_import_error", msg="google-genai not installed")
             return None
         except Exception as exc:
             log.error("veo_generate_error", error=str(exc)[:200])
