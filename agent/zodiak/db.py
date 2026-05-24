@@ -77,11 +77,17 @@ class AgentDB:
         """Append a message to the run's progress_log array."""
         timestamp = datetime.now(timezone.utc).strftime("%H:%M:%S")
         entry = f"[{timestamp}] {message}"
-        # Use Postgres array_append via RPC or raw SQL
-        self._client.rpc(
-            "array_append_text",
-            {"table_name": "agent_runs", "row_id": run_id, "col": "progress_log", "val": entry},
-        ).execute()
+        # Fetch current log, append in Python, then update
+        result = (
+            self._client.table("agent_runs")
+            .select("progress_log")
+            .eq("id", run_id)
+            .single()
+            .execute()
+        )
+        current_log = result.data.get("progress_log") or []
+        current_log.append(entry)
+        self.update_run(run_id, progress_log=current_log)
 
     def set_run_topic(self, run_id: str, topic: str) -> None:
         """Set the topic for a run."""
