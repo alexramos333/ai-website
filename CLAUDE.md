@@ -113,3 +113,44 @@ src/
 - CORS restricted to own domain in API routes.
 - Rate limiting on all public POST endpoints.
 - HTTP-only cookies for auth sessions (never localStorage).
+
+## Zodiak Video Agent (Python)
+
+Separate automated pipeline that runs daily to discover trending topics, generate a blog article + short-form video, and publish to the `articles` table. Lives in `agent/` — completely independent from the existing SEO Blog Article Generator.
+
+### Key files
+
+```
+agent/
+  run.py                  # CLI entry point (--dry-run, --phase, --topic)
+  zodiak/
+    config.py             # Loads .env.local, validates all required vars
+    db.py                 # Supabase client (service_role key)
+    storage.py            # Cloudflare R2 uploads
+    pipeline/
+      orchestrator.py     # Main pipeline runner
+      trend_discovery.py  # Apify + Perplexity + Claude topic selection
+      content_gen.py      # Blog article + video script generation
+      voiceover.py        # ElevenLabs synthesis
+      clip_selector.py    # Stock clips + Veo generation
+      video_assembly.py   # Shotstack render
+      publisher.py        # Insert into articles table
+```
+
+### Run commands
+
+```bash
+cd agent
+pip install -r requirements.txt
+python run.py              # Full pipeline
+python run.py --dry-run    # No API calls
+python run.py --topic "X"  # Override topic
+```
+
+### Important
+
+- Uses `ANTHROPIC_API_KEY_ZODIAK_AGENT` (NOT `ANTHROPIC_API_KEY`)
+- The existing SEO Blog Article Generator files are PROTECTED — do NOT modify them
+- Articles from this agent have `video_url IS NOT NULL`
+- Articles from the SEO generator have `video_url IS NULL`
+- GitHub Actions workflow: `.github/workflows/video-agent.yml`
