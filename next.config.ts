@@ -39,8 +39,8 @@ const securityHeaders = [
       "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",
       "font-src 'self'",
-      "img-src 'self' data: blob: https://*.supabase.co https://img.youtube.com",
-      "media-src 'self' blob:",
+      `img-src 'self' data: blob: https://*.supabase.co https://img.youtube.com ${process.env.NEXT_PUBLIC_R2_PUBLIC_URL ?? ""}`,
+      `media-src 'self' blob: ${process.env.NEXT_PUBLIC_R2_PUBLIC_URL ?? ""}`,
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
       "frame-src https://www.youtube.com https://www.youtube-nocookie.com https://videos.sproutvideo.com",
       "frame-ancestors 'none'",
@@ -52,6 +52,11 @@ const securityHeaders = [
 const supabaseHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
   : `${process.env.NEXT_PUBLIC_SUPABASE_PROJECT_ID ?? ""}.supabase.co`;
+
+// Derive R2 public hostname for image optimization (if configured)
+const r2Hostname = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
+  ? new URL(process.env.NEXT_PUBLIC_R2_PUBLIC_URL).hostname
+  : null;
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
@@ -69,6 +74,14 @@ const nextConfig: NextConfig = {
         hostname: supabaseHostname,
         pathname: "/storage/v1/object/public/**",
       },
+      ...(r2Hostname
+        ? [
+            {
+              protocol: "https" as const,
+              hostname: r2Hostname,
+            },
+          ]
+        : []),
     ],
   },
 

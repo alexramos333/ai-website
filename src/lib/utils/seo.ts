@@ -80,6 +80,37 @@ export function generateArticleJsonLd(
   };
 }
 
+/**
+ * Generate VideoObject JSON-LD for articles that have a video.
+ * Only call when article.video_url is non-null.
+ */
+export function generateVideoJsonLd(
+  article: ArticleRow
+): Record<string, unknown> | null {
+  if (!article.video_url) return null;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    name: article.title,
+    description: article.meta_description || article.excerpt,
+    thumbnailUrl: article.video_thumbnail_url || article.og_image || undefined,
+    uploadDate: article.published_at ?? article.created_at,
+    contentUrl: article.video_url,
+    ...(article.video_duration
+      ? { duration: `PT${article.video_duration}S` }
+      : {}),
+    author: {
+      "@type": "Person",
+      name: "Ramos",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "AI Website",
+    },
+  };
+}
+
 /** Extract FAQ schema JSON from the article content HTML comment marker. */
 export function extractFaqSchema(
   content: string

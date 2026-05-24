@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import {
   generateArticleMetadata,
   generateArticleJsonLd,
+  generateVideoJsonLd,
   calculateReadTime,
   countWords,
   extractFaqSchema,
@@ -141,6 +142,19 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           }}
         />
 
+        {/* VideoObject JSON-LD (if article has video) */}
+        {article.video_url && (() => {
+          const videoJsonLd = generateVideoJsonLd(article);
+          return videoJsonLd ? (
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify(videoJsonLd),
+              }}
+            />
+          ) : null;
+        })()}
+
         {/* FAQPage JSON-LD (if present) */}
         {faqSchema && (
           <script
@@ -214,6 +228,22 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                 className="w-full h-auto"
               />
             </figure>
+          )}
+
+          {/* Video player (only for articles with video) */}
+          {article.video_url && (
+            <div className="mt-8 -mx-4 sm:mx-0 overflow-hidden rounded-lg">
+              <video
+                controls
+                preload="metadata"
+                playsInline
+                poster={article.video_thumbnail_url || undefined}
+                className="w-full"
+              >
+                <source src={article.video_url} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
           )}
 
           {/* Table of Contents (for long articles) */}
