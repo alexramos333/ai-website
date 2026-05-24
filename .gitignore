@@ -43,3 +43,9 @@ next-env.d.ts
 
 # Supabase local config
 supabase/.temp/
+
+# Python (video agent)
+agent/__pycache__/
+agent/.venv/
+agent/*.egg-info/
+*.pyc
