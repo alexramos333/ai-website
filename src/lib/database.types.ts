@@ -14,42 +14,95 @@ export type Database = {
   }
   public: {
     Tables: {
-      article_generations: {
+      agent_runs: {
         Row: {
-          id: string
-          keyword: string
-          status: string
           article_id: string | null
-          error_message: string | null
-          model_used: string | null
-          tokens_used: number | null
-          generation_time_ms: number | null
-          created_at: string
           completed_at: string | null
+          cost_breakdown: Json
+          created_at: string
+          duration_ms: number | null
+          error_message: string | null
+          id: string
+          progress_log: string[]
+          run_date: string
+          status: string
+          topic: string | null
+          trigger_type: string
         }
         Insert: {
-          id?: string
-          keyword: string
-          status?: string
           article_id?: string | null
-          error_message?: string | null
-          model_used?: string | null
-          tokens_used?: number | null
-          generation_time_ms?: number | null
-          created_at?: string
           completed_at?: string | null
+          cost_breakdown?: Json
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          progress_log?: string[]
+          run_date?: string
+          status?: string
+          topic?: string | null
+          trigger_type?: string
         }
         Update: {
+          article_id?: string | null
+          completed_at?: string | null
+          cost_breakdown?: Json
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          progress_log?: string[]
+          run_date?: string
+          status?: string
+          topic?: string | null
+          trigger_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_runs_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      article_generations: {
+        Row: {
+          article_id: string | null
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          generation_time_ms: number | null
+          id: string
+          keyword: string
+          model_used: string | null
+          status: string
+          tokens_used: number | null
+        }
+        Insert: {
+          article_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          generation_time_ms?: number | null
+          id?: string
+          keyword: string
+          model_used?: string | null
+          status?: string
+          tokens_used?: number | null
+        }
+        Update: {
+          article_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          generation_time_ms?: number | null
           id?: string
           keyword?: string
-          status?: string
-          article_id?: string | null
-          error_message?: string | null
           model_used?: string | null
+          status?: string
           tokens_used?: number | null
-          generation_time_ms?: number | null
-          created_at?: string
-          completed_at?: string | null
         }
         Relationships: [
           {
@@ -233,6 +286,77 @@ export type Database = {
           website?: string
         }
         Relationships: []
+      }
+      stock_clips: {
+        Row: {
+          active: boolean
+          created_at: string
+          duration_seconds: number
+          filename: string
+          height: number
+          id: string
+          r2_url: string
+          tags: string[]
+          width: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          duration_seconds?: number
+          filename: string
+          height?: number
+          id?: string
+          r2_url: string
+          tags?: string[]
+          width?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          duration_seconds?: number
+          filename?: string
+          height?: number
+          id?: string
+          r2_url?: string
+          tags?: string[]
+          width?: number
+        }
+        Relationships: []
+      }
+      veo_usage: {
+        Row: {
+          cost_usd: number
+          created_at: string
+          id: string
+          prompt: string
+          run_id: string | null
+          video_url: string | null
+        }
+        Insert: {
+          cost_usd: number
+          created_at?: string
+          id?: string
+          prompt: string
+          run_id?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          cost_usd?: number
+          created_at?: string
+          id?: string
+          prompt?: string
+          run_id?: string | null
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "veo_usage_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "agent_runs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
