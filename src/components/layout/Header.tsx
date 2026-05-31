@@ -29,7 +29,8 @@ const navLinks: NavLink[] = [
       { label: "TikTok Shop Software", href: "/tiktok-shop" },
       { label: "AI Prompt Generator", href: "/portfolio/ai-prompt-generator" },
       { label: "AI Email Generator", href: "/portfolio/ai-email-generator" },
-      { label: "AI Video Agent", href: "/portfolio/ai-video-agent" },
+      // Temporarily hidden until the AI Video Agent project is ready — see TODO.md
+      // { label: "AI Video Agent", href: "/portfolio/ai-video-agent" },
     ],
   },
   { label: "LinkedIn", href: "https://www.linkedin.com/in/alex-r-a330a7137/", external: true },
