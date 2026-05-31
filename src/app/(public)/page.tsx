@@ -453,7 +453,7 @@ export default function HomePage() {
                 Looking for an AI Engineer, Data Engineer, or Full-Stack Developer? I specialize in helping businesses leverage AI to build Custom Software, Data Analytics, Data Pipelines, Automations, and more. Click Below To Learn More Or Call 910-619-9205.
               </p>
               <div className="mt-[10px] md:mt-[10px] flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <CTALink href="tel:9106199205" className="w-full sm:w-48" aria-label="Call now">
+                <CTALink href="tel:9106199205" className="w-full whitespace-nowrap sm:w-56" aria-label="Call now">
                   Call Now
                 </CTALink>
                 <CTALink
@@ -461,7 +461,7 @@ export default function HomePage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   variant="secondary"
-                  className="w-full sm:w-48"
+                  className="w-full whitespace-nowrap sm:w-56"
                   aria-label="Book appointment"
                 >
                   Book Appointment
