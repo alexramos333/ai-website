@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { getAnthropicClient } from "@/lib/anthropic";
+import { createMessageWithTimeout } from "@/lib/anthropic";
 import { facebookAdsSchema } from "@/lib/utils/validation";
 import {
   createSuccessResponse,
@@ -167,6 +167,9 @@ function parseResponse(step: number, text: string): string[] | string {
   return text.trim();
 }
 
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   const rateLimitKey = `facebook-ads:${getRateLimitKey(request)}`;
   const { allowed } = checkRateLimit(rateLimitKey, 10, 60_000);
@@ -199,8 +202,7 @@ export async function POST(request: NextRequest) {
       return createErrorResponse("Invalid step.", 400);
     }
 
-    const anthropic = getAnthropicClient();
-    const message = await anthropic.messages.create({
+    const message = await createMessageWithTimeout({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 4096,
       messages: [{ role: "user", content: prompt }],

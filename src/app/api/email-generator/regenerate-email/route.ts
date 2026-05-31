@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { getAnthropicClient } from "@/lib/anthropic";
+import { createMessageWithTimeout } from "@/lib/anthropic";
 import { emailRegenerateSchema } from "@/lib/utils/validation";
 import {
   createSuccessResponse,
@@ -18,6 +18,9 @@ function parseJsonResponse(text: string): unknown {
   }
   return JSON.parse(cleaned);
 }
+
+export const runtime = "nodejs";
+export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   const rateLimitKey = `email-regen:${getRateLimitKey(request)}`;
@@ -38,8 +41,7 @@ export async function POST(request: NextRequest) {
     const systemPrompt = SYSTEM_PROMPTS[sequenceType as SequenceType];
     const typeInfo = SEQUENCE_TYPES[sequenceType as SequenceType];
 
-    const anthropic = getAnthropicClient();
-    const message = await anthropic.messages.create({
+    const message = await createMessageWithTimeout({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 4096,
       system: [

@@ -7,7 +7,7 @@
 // ============================================================
 
 import { type NextRequest } from "next/server";
-import { getAnthropicClient } from "@/lib/anthropic";
+import { createMessageWithTimeout } from "@/lib/anthropic";
 import { aiPromptGeneratorSchema } from "@/lib/utils/validation";
 import {
   createSuccessResponse,
@@ -49,6 +49,9 @@ function detectInjection(input: string): boolean {
     return lower.includes(pattern);
   });
 }
+
+export const runtime = "nodejs";
+export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   // ─── Guardrail 3: Dual Rate Limiting (10/hr AND 50/day) ───
@@ -114,8 +117,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ─── Guardrail 1 + 5 + 6: API Call with hard max_tokens and prompt caching ───
-    const anthropic = getAnthropicClient();
-    const message = await anthropic.messages.create({
+    const message = await createMessageWithTimeout({
       model: "claude-haiku-4-5-20251001",
       max_tokens: MAX_OUTPUT_TOKENS,
       system: [

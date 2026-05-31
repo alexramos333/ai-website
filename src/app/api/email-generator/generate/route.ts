@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { getAnthropicClient } from "@/lib/anthropic";
+import { createMessageWithTimeout } from "@/lib/anthropic";
 import { emailGenerateSchema } from "@/lib/utils/validation";
 import {
   createSuccessResponse,
@@ -20,6 +20,11 @@ function parseJsonResponse(text: string): unknown {
   return JSON.parse(cleaned);
 }
 
+export const runtime = "nodejs";
+// Full multi-email sequence generation (8192 tokens) takes ~35-40s; give it
+// article-tier headroom rather than the 60s default used by the lighter tools.
+export const maxDuration = 120;
+
 export async function POST(request: NextRequest) {
   const rateLimitKey = `email-gen:${getRateLimitKey(request)}`;
   const { allowed } = checkRateLimit(rateLimitKey, 10, 60_000);
@@ -39,8 +44,7 @@ export async function POST(request: NextRequest) {
     const typeInfo = SEQUENCE_TYPES[sequenceType as SequenceType];
     const systemPrompt = SYSTEM_PROMPTS[sequenceType as SequenceType];
 
-    const anthropic = getAnthropicClient();
-    const message = await anthropic.messages.create({
+    const message = await createMessageWithTimeout({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 8192,
       system: [
@@ -56,7 +60,7 @@ export async function POST(request: NextRequest) {
           content: `Generate a complete ${typeInfo.name} with exactly ${typeInfo.emailCount} emails. Follow every blueprint and rule exactly as specified. Return ONLY valid JSON.`,
         },
       ],
-    });
+    }, 115_000);
 
     const textBlock = message.content.find((block) => block.type === "text");
     if (!textBlock || textBlock.type !== "text") {
