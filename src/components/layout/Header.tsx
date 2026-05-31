@@ -19,8 +19,6 @@ interface NavLink {
 
 const navLinks: NavLink[] = [
   { label: "Home", href: "/" },
-  { label: "LinkedIn", href: "https://www.linkedin.com/in/alex-r-a330a7137/", external: true },
-  { label: "Free Course", href: "/free-course", hidden: true },
   {
     label: "Portfolio",
     href: "/portfolio",
@@ -34,6 +32,9 @@ const navLinks: NavLink[] = [
       { label: "AI Video Agent", href: "/portfolio/ai-video-agent" },
     ],
   },
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/alex-r-a330a7137/", external: true },
+  { label: "GitHub", href: "https://github.com/alexramos333", external: true },
+  { label: "Free Course", href: "/free-course", hidden: true },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/#contact" },
 ];

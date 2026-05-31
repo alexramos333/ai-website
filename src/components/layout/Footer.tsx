@@ -53,7 +53,7 @@ export default function Footer() {
               LinkedIn
             </a>
             <a
-              href="https://github.com"
+              href="https://github.com/alexramos333"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white transition-colors hover:text-[#5de6fc]"
