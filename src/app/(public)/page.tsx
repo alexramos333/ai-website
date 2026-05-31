@@ -457,12 +457,14 @@ export default function HomePage() {
                   Call Now
                 </CTALink>
                 <CTALink
-                  href="/portfolio"
+                  href="https://calendly.com/alexramos300-3mke/30min"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   variant="secondary"
                   className="w-full sm:w-48"
-                  aria-label="View portfolio"
+                  aria-label="Book appointment"
                 >
-                  View Portfolio
+                  Book Appointment
                 </CTALink>
               </div>
             </GlassCard>
