@@ -55,7 +55,8 @@ class ElevenLabsConfig:
 
 @dataclass(frozen=True)
 class VeoConfig:
-    credentials_path: str
+    api_key: str
+    credentials_path: str = ""
     monthly_spend_cap: float = 15.0
 
 
@@ -156,7 +157,8 @@ def load_config(
     perplexity_key = get("PERPLEXITY_API_KEY")
     elevenlabs_key = get("ELEVENLABS_API_KEY")
     elevenlabs_voice = get("ELEVENLABS_VOICE_ID")
-    gcp_creds = get("GOOGLE_APPLICATION_CREDENTIALS")
+    gemini_key = get("GEMINI_API_KEY")
+    gcp_creds = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", "")
     shotstack_sandbox = get("SHOTSTACK_API_KEY_SANDBOX")
     shotstack_prod = get("SHOTSTACK_API_KEY_PRODUCTION")
     r2_access = get("R2_ACCESS_KEY_ID")
@@ -190,7 +192,7 @@ def load_config(
             api_key=elevenlabs_key,
             voice_id=elevenlabs_voice,
         ),
-        veo=VeoConfig(credentials_path=gcp_creds, monthly_spend_cap=veo_cap),
+        veo=VeoConfig(api_key=gemini_key, credentials_path=gcp_creds, monthly_spend_cap=veo_cap),
         shotstack=ShotstackConfig(
             api_key_sandbox=shotstack_sandbox,
             api_key_production=shotstack_prod,

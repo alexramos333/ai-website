@@ -19,11 +19,13 @@ class VeoClient:
     COST_PER_SECOND = 0.03  # $0.03/sec for Veo at 720p
 
     def __init__(self, config: VeoConfig) -> None:
+        self._api_key = config.api_key
         self._credentials_path = config.credentials_path
         self._monthly_cap = config.monthly_spend_cap
 
-        # Set credentials path for Google Cloud SDK
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = self._credentials_path
+        # Set credentials path for Google Cloud SDK (fallback)
+        if self._credentials_path:
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = self._credentials_path
 
     def estimate_cost(self, duration_seconds: int) -> float:
         """Estimate the cost of generating a clip."""
@@ -48,7 +50,7 @@ class VeoClient:
 
             log.info("veo_generate_start", prompt=prompt[:80], duration=duration_seconds)
 
-            client = genai.Client()
+            client = genai.Client(api_key=self._api_key)
 
             operation = client.models.generate_videos(
                 model="veo-2.0-generate-001",
@@ -57,7 +59,6 @@ class VeoClient:
                     number_of_videos=1,
                     duration_seconds=duration_seconds,
                     resolution="720p",
-                    include_audio=False,
                 ),
             )
 
