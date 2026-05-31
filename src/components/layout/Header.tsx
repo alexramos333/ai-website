@@ -78,7 +78,7 @@ export default function Header({ user = null }: HeaderProps) {
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 pt-0 pb-[10px] md:py-4">
         {/* Logo */}
         <Link href="/" className="font-black text-white" style={{ fontSize: "clamp(1rem, 3vw, 1.25rem)" }}>
-          AI Website
+          Alex Ramos
         </Link>
 
         {/* Desktop nav */}
