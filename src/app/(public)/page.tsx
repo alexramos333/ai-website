@@ -432,7 +432,7 @@ export default function HomePage() {
                 className="mx-auto mt-[10px] md:mt-[10px] max-w-3xl font-black"
                 style={{ fontSize: "clamp(1.1rem, 2.5vw, 1.75rem)", lineHeight: 1.3 }}
               >
-                Full-Stack Software Developer That Specializes In Building AI Powered Software Applications
+                How I Scaled A New Client From $0 To $50,000 In Sales In 60 days With A 10X Return On Ad Spend
               </h1>
               {/* Video */}
               <div className="mx-auto mt-[10px] md:mt-[10px] w-full max-w-3xl rounded-xl border-2 border-[#5de6fc] overflow-hidden">
