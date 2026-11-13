@@ -426,7 +426,7 @@ export default function HomePage() {
           <section className="px-4 pt-12 md:pt-16" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
             <GlassCard padding="md" className="max-w-4xl text-center md:p-10">
               <span className="inline-block rounded-full bg-white/10 px-4 py-1.5 text-sm text-white/75">
-                AI Engineer | Data Engineer | Full-Stack Software Developer
+                Digital Marketer | Marketing Engineer | AI Engineer | Full-Stack Software Developer
               </span>
               <h1
                 className="mx-auto mt-[10px] md:mt-[10px] max-w-3xl font-black"
