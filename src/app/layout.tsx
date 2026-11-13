@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "@/styles/globals.css";
+import Starfield from "@/components/effects/Starfield";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -35,7 +36,8 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href={`https://${process.env.NEXT_PUBLIC_SUPABASE_PROJECT_ID}.supabase.co`} />
       </head>
-      <body className="min-h-screen bg-[#001138] font-sans text-white antialiased">
+      <body className="min-h-screen font-sans text-white antialiased">
+        <Starfield />
         {children}
       </body>
     </html>

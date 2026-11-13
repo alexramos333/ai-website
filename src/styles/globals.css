@@ -17,8 +17,14 @@
   --font-body: var(--font-montserrat);
 }
 
+/* Space background matched to the AI Funnel Builder; stars are drawn by components/effects/Starfield */
 body {
-  background-color: #001138;
+  background-color: #040816;
+  background-image:
+    radial-gradient(60% 50% at 50% 55%, rgba(47, 124, 255, 0.2), transparent 70%),
+    radial-gradient(40% 35% at 20% 15%, rgba(124, 92, 255, 0.18), transparent 70%),
+    radial-gradient(35% 30% at 85% 85%, rgba(77, 225, 255, 0.1), transparent 70%);
+  background-attachment: fixed;
   color: #fff;
   font-family: var(--font-body), system-ui, sans-serif;
 }
