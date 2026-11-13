@@ -108,6 +108,30 @@ const iconProps = {
 
 const teamMembers: TeamMember[] = [
   {
+    role: "Digital Marketer",
+    icon: (
+      <svg {...iconProps} viewBox="0 0 24 24">
+        <rect x="2" y="3" width="20" height="14" rx="2" />
+        <path d="M8 21h8M12 17v4" />
+        <polyline points="7 10 10 7 13 10 17 7" />
+      </svg>
+    ),
+  },
+  {
+    role: "Marketing Engineer",
+    icon: (
+      <svg {...iconProps} viewBox="0 0 24 24">
+        {/* Growth chart */}
+        <path d="M3 3v18h18" />
+        <path d="M7 17v-3M11 17v-6M15 17v-4" />
+        {/* Gear */}
+        <circle cx="17" cy="7" r="2.5" />
+        <circle cx="17" cy="7" r="0.75" fill="currentColor" />
+        <path d="M17 3v1.5M17 9.5V11M13 7h1.5M19.5 7H21M14.17 4.17l1.06 1.06M18.77 8.77l1.06 1.06M14.17 9.83l1.06-1.06M18.77 5.23l1.06-1.06" />
+      </svg>
+    ),
+  },
+  {
     role: "Full-Stack AI Software Developer",
     icon: (
       <svg {...iconProps} viewBox="0 0 24 24">
@@ -171,16 +195,6 @@ const teamMembers: TeamMember[] = [
     ),
   },
   {
-    role: "Digital Marketer",
-    icon: (
-      <svg {...iconProps} viewBox="0 0 24 24">
-        <rect x="2" y="3" width="20" height="14" rx="2" />
-        <path d="M8 21h8M12 17v4" />
-        <polyline points="7 10 10 7 13 10 17 7" />
-      </svg>
-    ),
-  },
-  {
     role: "Sales Funnel Builder",
     icon: (
       <svg {...iconProps} viewBox="0 0 24 24">
@@ -224,16 +238,6 @@ const teamMembers: TeamMember[] = [
     icon: (
       <svg {...iconProps} viewBox="0 0 24 24">
         <path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
-      </svg>
-    ),
-  },
-  {
-    role: "Project Manager",
-    icon: (
-      <svg {...iconProps} viewBox="0 0 24 24">
-        <path d="M12 2L2 7l10 5 10-5-10-5z" />
-        <path d="M2 17l10 5 10-5" />
-        <path d="M2 12l10 5 10-5" />
       </svg>
     ),
   },
